@@ -1,0 +1,255 @@
+{
+  "info": {
+    "_postman_id": "7f3f2f60-t4-extensiones-api-fase1",
+    "name": "extensiones · API fase 1 (T4)",
+    "description": "Catálogo + cuentas + favoritos. Requiere el server local (`npm run dev`) con la base seedeada.\n\nFlujo de sesión: 1) `CSRF token` 2) `Login` (Postman guarda la cookie) 3) endpoints de favoritos 4) `Logout`.\n\nLogin/logout/sesión usan las rutas nativas de Auth.js (convención propia): `/api/auth/csrf`, `/api/auth/callback/credentials`, `/api/auth/session`, `/api/auth/signout`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "emailPrueba", "value": "clienta.postman@example.com" },
+    { "key": "passwordPrueba", "value": "clave-segura-123" },
+    { "key": "csrfToken", "value": "" },
+    { "key": "slugEjemplo", "value": "rubio-platino-artico-rub-001" },
+    { "key": "productoEjemplo", "value": "prod_rub_001" }
+  ],
+  "item": [
+    {
+      "name": "Catálogo",
+      "item": [
+        {
+          "name": "Categorías — happy (200, ordenadas por orden)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"lista\", () => pm.expect(pm.response.json().length).to.be.at.least(3));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/categorias" }
+        },
+        {
+          "name": "Categorías — unhappy: método no permitido (405)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"405\", () => pm.response.to.have.status(405));"] } }],
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/categorias" }
+        },
+        {
+          "name": "Productos — AND 2 filtros: familia+tipo (200)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "const r = pm.response.json();", "pm.test(\"AND estricto\", () => r.productos.every(p => p.familia_tono === 'rubios' && p.tipo === 'clip'));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos?familia=rubios&tipo=clip" }
+        },
+        {
+          "name": "Productos — AND 3 filtros: familia+tipo+largo (200)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "const r = pm.response.json();", "pm.test(\"AND estricto con largo\", () => r.productos.every(p => p.familia_tono === 'rubios' && p.tipo === 'clip' && p.variantes.some(v => v.largo_pulgadas === 20)));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos?familia=rubios&tipo=clip&largo=20" }
+        },
+        {
+          "name": "Productos — búsqueda por nombre de tono (200)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"resultados con 'miel'\", () => pm.response.json().productos.every(p => p.nombre_tono.toLowerCase().includes('miel')));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos?q=miel" }
+        },
+        {
+          "name": "Productos — 0 resultados es válido (200, lista vacía)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"vacía sin error\", () => pm.expect(pm.response.json().total).to.eql(0));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos?familia=negros&q=platino" }
+        },
+        {
+          "name": "Productos — unhappy: largo no numérico (400)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"400\", () => pm.response.to.have.status(400));", "pm.test(\"{ error }\", () => pm.expect(pm.response.json().error).to.be.a('string'));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos?largo=abc" }
+        },
+        {
+          "name": "Facetas — happy (200, solo valores existentes)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "const r = pm.response.json();", "pm.test(\"5 familias, largos 18-24\", () => { pm.expect(r.familias.length).to.eql(5); pm.expect(r.largos).to.eql([18,20,22,24]); });"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos/facetas" }
+        },
+        {
+          "name": "Ficha por slug — happy (200, agotadas incluidas)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"3 variantes\", () => pm.expect(pm.response.json().variantes.length).to.eql(3));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos/{{slugEjemplo}}" }
+        },
+        {
+          "name": "Ficha por slug — unhappy: inexistente/inactivo (404)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"404\", () => pm.response.to.have.status(404));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos/no-existe-000" }
+        },
+        {
+          "name": "Testimonios — happy (200, 6 activos por orden)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"6 testimonios\", () => pm.expect(pm.response.json().length).to.eql(6));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/testimonios" }
+        },
+        {
+          "name": "Testimonios — unhappy: método no permitido (405)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"405\", () => pm.response.to.have.status(405));"] } }],
+          "request": { "method": "POST", "url": "{{baseUrl}}/api/testimonios" }
+        }
+      ]
+    },
+    {
+      "name": "Cuenta",
+      "item": [
+        {
+          "name": "Registro — happy (201; en re-corridas 409 porque ya existe)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"201 nueva o 409 ya creada\", () => pm.expect([201, 409]).to.include(pm.response.code));"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{emailPrueba}}\",\n  \"password\": \"{{passwordPrueba}}\",\n  \"nombre\": \"Clienta Postman\"\n}" },
+            "url": "{{baseUrl}}/api/cuenta/registro"
+          }
+        },
+        {
+          "name": "Registro — unhappy: duplicado (409, sin crear)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"409\", () => pm.response.to.have.status(409));", "pm.test(\"aviso\", () => pm.expect(pm.response.json().error).to.eql('Ese correo ya está registrado.'));"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{emailPrueba}}\",\n  \"password\": \"{{passwordPrueba}}\"\n}" },
+            "url": "{{baseUrl}}/api/cuenta/registro"
+          }
+        },
+        {
+          "name": "Registro — unhappy: contraseña <8 (400 con requisito exacto)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"400\", () => pm.response.to.have.status(400));", "pm.test(\"mensaje exacto\", () => pm.expect(pm.response.json().error).to.eql('La contraseña debe tener al menos 8 caracteres'));"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"otra@example.com\",\n  \"password\": \"1234567\"\n}" },
+            "url": "{{baseUrl}}/api/cuenta/registro"
+          }
+        },
+        {
+          "name": "Registro — unhappy: email inválido (400)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"400\", () => pm.response.to.have.status(400));", "pm.test(\"mensaje claro\", () => pm.expect(pm.response.json().error).to.eql('El correo no tiene un formato válido'));"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"no-es-email\",\n  \"password\": \"12345678\"\n}" },
+            "url": "{{baseUrl}}/api/cuenta/registro"
+          }
+        },
+        {
+          "name": "CSRF token (Auth.js) — guarda {{csrfToken}}",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.collectionVariables.set('csrfToken', pm.response.json().csrfToken);"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/csrf" }
+        },
+        {
+          "name": "Login — happy (cookie de sesión; correr CSRF antes)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"login ok (redirige sin error)\", () => { pm.expect(pm.response.code).to.be.oneOf([200, 302]); pm.expect(pm.response.text()).to.not.include('CredentialsSignin'); });"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "csrfToken", "value": "{{csrfToken}}" },
+              { "key": "email", "value": "{{emailPrueba}}" },
+              { "key": "password", "value": "{{passwordPrueba}}" }
+            ] },
+            "url": "{{baseUrl}}/api/auth/callback/credentials"
+          }
+        },
+        {
+          "name": "Sesión — happy (usuario presente tras login)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200 con user\", () => { pm.response.to.have.status(200); pm.expect(pm.response.json().user).to.be.an('object'); });"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/session" }
+        },
+        {
+          "name": "Login — unhappy: credenciales inválidas (error genérico)",
+          "description": "Correr CSRF antes. El error es genérico: no dice qué campo falló.",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"error genérico de credenciales\", () => pm.expect(pm.response.text()).to.include('error'));"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "csrfToken", "value": "{{csrfToken}}" },
+              { "key": "email", "value": "{{emailPrueba}}" },
+              { "key": "password", "value": "contrasena-incorrecta" }
+            ] },
+            "url": "{{baseUrl}}/api/auth/callback/credentials"
+          }
+        },
+        {
+          "name": "Login — unhappy: 6.º intento fallido → 429",
+          "description": "Correr 'credenciales inválidas' 5 veces con el mismo email; este 6.º intento responde 429 con mensaje de espera.",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"429\", () => pm.response.to.have.status(429));", "pm.test(\"mensaje de espera\", () => pm.expect(pm.response.json().error).to.include('15 minutos'));"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "csrfToken", "value": "{{csrfToken}}" },
+              { "key": "email", "value": "{{emailPrueba}}" },
+              { "key": "password", "value": "contrasena-incorrecta" }
+            ] },
+            "url": "{{baseUrl}}/api/auth/callback/credentials"
+          }
+        },
+        {
+          "name": "Logout (signout; correr CSRF antes)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"cierra sesión\", () => pm.expect(pm.response.code).to.be.oneOf([200, 302]));"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
+            "body": { "mode": "urlencoded", "urlencoded": [
+              { "key": "csrfToken", "value": "{{csrfToken}}" }
+            ] },
+            "url": "{{baseUrl}}/api/auth/signout"
+          }
+        },
+        {
+          "name": "Sesión tras logout — unhappy (sin usuario)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"sin sesión\", () => { const body = pm.response.text(); pm.expect(body === 'null' || !JSON.parse(body || '{}').user).to.be.true; });"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/session" }
+        }
+      ]
+    },
+    {
+      "name": "Favoritos",
+      "item": [
+        {
+          "name": "Listar — unhappy: sin sesión (401)",
+          "description": "Correr con la sesión cerrada (después de Logout).",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"401\", () => pm.response.to.have.status(401));", "pm.test(\"{ error }\", () => pm.expect(pm.response.json().error).to.be.a('string'));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/favoritos" }
+        },
+        {
+          "name": "Agregar — happy (201; requiere login)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"201\", () => pm.response.to.have.status(201));"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"producto_id\": \"{{productoEjemplo}}\"\n}" },
+            "url": "{{baseUrl}}/api/favoritos"
+          }
+        },
+        {
+          "name": "Agregar — unhappy: cuerpo inválido (400)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"400\", () => pm.response.to.have.status(400));"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": "{{baseUrl}}/api/favoritos"
+          }
+        },
+        {
+          "name": "Agregar — unhappy: producto inexistente (404)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"404\", () => pm.response.to.have.status(404));"] } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"producto_id\": \"prod_no_existe\"\n}" },
+            "url": "{{baseUrl}}/api/favoritos"
+          }
+        },
+        {
+          "name": "Listar — happy (favoritos de la cuenta en sesión)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"lista\", () => pm.expect(pm.response.json()).to.be.an('array'));"] } }],
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/favoritos" }
+        },
+        {
+          "name": "Quitar — happy (200, eliminado: true)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"eliminado\", () => pm.expect(pm.response.json().eliminado).to.eql(true));"] } }],
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/favoritos?producto_id={{productoEjemplo}}" }
+        },
+        {
+          "name": "Quitar — idempotente (200, eliminado: false, sin error)",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200 aunque ya no estaba\", () => pm.response.to.have.status(200));", "pm.test(\"eliminado false\", () => pm.expect(pm.response.json().eliminado).to.eql(false));"] } }],
+          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/favoritos?producto_id={{productoEjemplo}}" }
+        }
+      ]
+    }
+  ]
+}

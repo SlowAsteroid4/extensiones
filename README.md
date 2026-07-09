@@ -40,11 +40,24 @@ prisma/           # schema, migraciones, seed
 | Comando | Qué hace |
 |---|---|
 | `npm run dev` | servidor de desarrollo |
-| `npm test` | unit tests (Vitest) |
+| `npm test` | unit + integración (Vitest; necesita el Postgres de Docker — crea y seedea `extensiones_test`) |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript sin emitir |
 | `npm run db:migrate` | migraciones Prisma |
 | `npm run db:seed` | seed idempotente (re-ejecutable) |
+
+## API (fase 1 · T4)
+
+Colección Postman en `postman/extensiones.postman_collection.json` (todos los
+endpoints con caso happy y unhappy).
+
+- `GET /api/categorias` · `GET /api/testimonios`
+- `GET /api/productos?familia&tipo&largo&q&categoria` (AND estricto) ·
+  `GET /api/productos/facetas` · `GET /api/productos/[slug]`
+- `POST /api/cuenta/registro`
+- Auth.js: `GET /api/auth/csrf` · `POST /api/auth/callback/credentials` (login,
+  rate limit 5 fallos/15 min → 429) · `GET /api/auth/session` · `POST /api/auth/signout`
+- `GET/POST/DELETE /api/favoritos` (sesión requerida; DELETE con `?producto_id=`)
 
 ## Convenciones
 
