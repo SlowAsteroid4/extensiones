@@ -1,26 +1,47 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Tokens de la dirección "Magenta audaz" (encargo T3) — Tailwind v4: los tokens
+ * viven en @theme y generan las utilidades (bg-primario, text-h1, etc.).
+ *
+ * REGLA DE DISEÑO: el magenta (primario/secundario) JAMÁS en texto de cuerpo
+ * pequeño — solo en acentos, botones, precios y titulares.
+ */
+@theme {
+  /* Colores */
+  --color-fondo: #ffffff;
+  --color-primario: #ff0891;
+  --color-secundario: #c6006e;
+  --color-acento: #ff8fc4;
+  --color-texto: #2b1620;
+  --color-superficie: #fce0ef;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Fuente */
+  --font-sans: var(--font-poppins), "Poppins", ui-sans-serif, system-ui, sans-serif;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Escala tipográfica: H1 40/800 · H2 18/800 · cuerpo 13–14/500 · precio 16/800 */
+  --text-h1: 2.5rem; /* 40px */
+  --text-h1--font-weight: 800;
+  --text-h1--line-height: 1.15;
+  --text-h2: 1.125rem; /* 18px */
+  --text-h2--font-weight: 800;
+  --text-h2--line-height: 1.3;
+  --text-cuerpo: 0.875rem; /* 14px */
+  --text-cuerpo--font-weight: 500;
+  --text-cuerpo--line-height: 1.6;
+  --text-cuerpo-sm: 0.8125rem; /* 13px */
+  --text-cuerpo-sm--font-weight: 500;
+  --text-cuerpo-sm--line-height: 1.6;
+  --text-precio: 1rem; /* 16px */
+  --text-precio--font-weight: 800;
+  --text-precio--line-height: 1.3;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--font-sans);
+  font-size: var(--text-cuerpo);
+  font-weight: 500;
+  line-height: 1.6;
 }

@@ -1,0 +1,129 @@
+// Schema T3 — spec técnica §2, literal. 8 entidades.
+// Dinero: enteros en CENTAVOS de MXN (precio_mxn, total_mxn, precio_unitario_congelado).
+// largo_cm: guarda los valores literales del encargo {18, 20, 22, 24} — ver handoff T3,
+// pregunta abierta sobre unidad (el encargo los cierra con marca de pulgadas).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+// La URL de conexión vive en prisma.config.ts (Prisma 7) y llega por env.
+datasource db {
+  provider = "postgresql"
+}
+
+enum Rol {
+  clienta
+  admin
+}
+
+enum EstadoPedido {
+  pendiente
+  pagado_sandbox
+  rechazado
+}
+
+model Categoria {
+  id     String @id @default(cuid())
+  nombre String
+  slug   String @unique
+  orden  Int
+
+  productos Producto[]
+}
+
+model Producto {
+  id           String   @id @default(cuid())
+  nombre_tono  String
+  // Enum editable (spec §2): String validado contra la lista editable en
+  // src/shared/validacion/familias.ts — un enum de Postgres no sería editable sin migración.
+  familia_tono String
+  tipo         String
+  descripcion  String
+  fotos        String[]
+  categoria_id String
+  activo       Boolean  @default(true)
+
+  categoria Categoria       @relation(fields: [categoria_id], references: [id])
+  variantes VarianteLargo[]
+  favoritos Favorito[]
+
+  @@index([familia_tono])
+  @@index([tipo])
+  @@index([categoria_id])
+}
+
+// Precio y existencias viven en la VARIANTE, no en el producto (spec §2).
+model VarianteLargo {
+  id          String @id @default(cuid())
+  producto_id String
+  largo_cm    Int
+  precio_mxn  Int
+  existencias Int
+  sku         String @unique
+
+  producto     Producto     @relation(fields: [producto_id], references: [id])
+  pedido_items PedidoItem[]
+
+  @@index([largo_cm])
+}
+
+model Cuenta {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  hash_password String
+  nombre        String
+  rol           Rol      @default(clienta)
+  creada_en     DateTime @default(now())
+
+  favoritos Favorito[]
+  pedidos   Pedido[]
+}
+
+model Favorito {
+  cuenta_id   String
+  producto_id String
+  creado_en   DateTime @default(now())
+
+  cuenta   Cuenta   @relation(fields: [cuenta_id], references: [id])
+  producto Producto @relation(fields: [producto_id], references: [id])
+
+  @@id([cuenta_id, producto_id])
+}
+
+model Pedido {
+  id                String       @id @default(cuid())
+  folio             String       @unique
+  // NULLABLE: compra de invitada (spec §2).
+  cuenta_id         String?
+  email_contacto    String
+  telefono_contacto String?
+  total_mxn         Int
+  estado            EstadoPedido @default(pendiente)
+  pasarela_ref      String?
+  creado_en         DateTime     @default(now())
+
+  cuenta Cuenta?      @relation(fields: [cuenta_id], references: [id])
+  items  PedidoItem[]
+}
+
+model PedidoItem {
+  pedido_id                 String
+  variante_id               String
+  cantidad                  Int
+  precio_unitario_congelado Int
+
+  pedido   Pedido        @relation(fields: [pedido_id], references: [id])
+  variante VarianteLargo @relation(fields: [variante_id], references: [id])
+
+  @@id([pedido_id, variante_id])
+}
+
+model Testimonio {
+  id     String  @id @default(cuid())
+  nombre String
+  texto  String
+  orden  Int
+  activo Boolean @default(true)
+}
