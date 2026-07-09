@@ -8,10 +8,35 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+    # Postgres para los tests de integración (la suite crea y seedea
+    # `extensiones_test` en el globalSetup de Vitest).
+    services:
+      db:
+        image: postgres:17
+        env:
+          POSTGRES_USER: extensiones
+          POSTGRES_PASSWORD: extensiones_ci
+          POSTGRES_DB: extensiones
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U extensiones"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Credenciales SOLO de CI (base efímera del job, no son secretos).
+      DATABASE_URL: postgresql://extensiones:extensiones_ci@localhost:5432/extensiones
+      SEED_ADMIN_EMAIL: admin@extensiones.local
+      SEED_ADMIN_PASSWORD: ci-seed-admin-1234
+      AUTH_SECRET: ci-secret-solo-para-tests
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
@@ -26,5 +51,5 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Unit tests
+      - name: Unit + integración
         run: npm test

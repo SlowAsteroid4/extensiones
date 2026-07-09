@@ -20,6 +20,7 @@ export const categoriaSchema = z.object({
 
 export const productoSchema = z.object({
   nombre_tono: sinHtml("nombre_tono").pipe(z.string().max(120)),
+  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "slug inválido"),
   familia_tono: familiaTonoSchema,
   tipo: sinHtml("tipo").pipe(z.string().max(40)),
   descripcion: sinHtml("descripcion").pipe(z.string().max(2000)),
@@ -29,13 +30,13 @@ export const productoSchema = z.object({
 });
 
 export const varianteLargoSchema = z.object({
-  largo_cm: z
+  largo_pulgadas: z
     .number()
     .int()
     .refine(
       (largo): largo is (typeof LARGOS_DISPONIBLES)[number] =>
         (LARGOS_DISPONIBLES as readonly number[]).includes(largo),
-      `largo_cm debe ser uno de: ${LARGOS_DISPONIBLES.join(", ")}`
+      `largo_pulgadas debe ser uno de: ${LARGOS_DISPONIBLES.join(", ")}`
     ),
   // Dinero en centavos de MXN, siempre entero positivo.
   precio_mxn: z.number().int().positive(),
@@ -72,4 +73,41 @@ export const testimonioSchema = z.object({
   texto: sinHtml("texto").pipe(z.string().max(500)),
   orden: z.number().int().min(0),
   activo: z.boolean(),
+});
+
+// ── T4 · API fase 1 ──────────────────────────────────────────────────────────
+
+// H07: el mensaje dice el requisito exacto (política cerrada: mínimo 8).
+export const MENSAJE_PASSWORD = "La contraseña debe tener al menos 8 caracteres";
+export const MENSAJE_EMAIL = "El correo no tiene un formato válido";
+
+export const registroSchema = z.object({
+  email: z.email(MENSAJE_EMAIL).max(254).transform((v) => v.toLowerCase()),
+  password: z.string().min(8, MENSAJE_PASSWORD).max(200),
+  // La entidad Cuenta exige nombre; en el registro es opcional (si falta se usa
+  // la parte local del email — decisión reportada en el handoff T4).
+  nombre: sinHtml("nombre").pipe(z.string().max(120)).optional(),
+});
+
+// H08: para authorize de Auth.js — solo forma, sin política (el error es genérico).
+export const credencialesSchema = z.object({
+  email: z.email().transform((v) => v.toLowerCase()),
+  password: z.string().min(1),
+});
+
+export const favoritoSchema = z.object({
+  producto_id: z.string({ error: "producto_id es requerido" }).min(1, "producto_id es requerido"),
+});
+
+// Query params de GET /api/productos — coerción desde string; inválido → 400.
+export const filtrosCatalogoSchema = z.object({
+  familia: z.string().min(1).max(60).optional(),
+  tipo: z.string().min(1).max(60).optional(),
+  largo: z.coerce
+    .number({ error: "largo debe ser un número (pulgadas: 18, 20, 22 o 24)" })
+    .int("largo debe ser un número entero")
+    .positive("largo debe ser un entero positivo")
+    .optional(),
+  q: z.string().min(1).max(100).optional(),
+  categoria: z.string().min(1).max(80).optional(),
 });

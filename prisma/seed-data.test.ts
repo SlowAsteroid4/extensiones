@@ -19,11 +19,19 @@ describe("integridad del seed", () => {
   it("cada producto tiene exactamente 3 variantes con largos distintos de {18, 20, 22, 24}", () => {
     for (const producto of PRODUCTOS_SEED) {
       expect(producto.variantes).toHaveLength(3);
-      const largos = producto.variantes.map((v) => v.largo_cm);
+      const largos = producto.variantes.map((v) => v.largo_pulgadas);
       expect(new Set(largos).size).toBe(3);
       for (const largo of largos) {
         expect(LARGOS_DISPONIBLES).toContain(largo);
       }
+    }
+  });
+
+  it("todos los slugs de producto son únicos y con formato kebab-case (T4)", () => {
+    const slugs = PRODUCTOS_SEED.map((p) => p.slug);
+    expect(new Set(slugs).size).toBe(slugs.length);
+    for (const slug of slugs) {
+      expect(slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
     }
   });
 

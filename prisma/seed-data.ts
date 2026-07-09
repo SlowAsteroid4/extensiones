@@ -2,6 +2,7 @@
 // integridad cuente sobre la misma fuente que se inserta en la base.
 // Dinero en CENTAVOS de MXN. Ids fijos → upserts idempotentes.
 import { FAMILIAS_TONO, LARGOS_DISPONIBLES } from "../src/shared/validacion/familias";
+import { slugificar } from "../src/shared/texto/slug";
 
 export interface CategoriaSeed {
   id: string;
@@ -12,7 +13,7 @@ export interface CategoriaSeed {
 
 export interface VarianteSeed {
   id: string;
-  largo_cm: number;
+  largo_pulgadas: number;
   precio_mxn: number;
   existencias: number;
   sku: string;
@@ -21,6 +22,7 @@ export interface VarianteSeed {
 export interface ProductoSeed {
   id: string;
   nombre_tono: string;
+  slug: string;
   familia_tono: string;
   tipo: string;
   descripcion: string;
@@ -176,15 +178,19 @@ function construirProductos(): ProductoSeed[] {
 
       const variantes: VarianteSeed[] = largos.map((largo, k) => ({
         id: `var_${codigo.toLowerCase()}_${numero}_${largo}`,
-        largo_cm: largo,
+        largo_pulgadas: largo,
         precio_mxn: precioMuestra(iGlobal, k),
         existencias: existenciasMuestra(iGlobal, k),
         sku: `EXT-${codigo}-${numero}-${largo}`,
       }));
 
+      // T4: slug único = nombre_tono slugificado + id corto (sin prefijo prod_).
+      const idCorto = id.replace(/^prod_/, "").replace(/_/g, "-");
+
       productos.push({
         id,
         nombre_tono,
+        slug: `${slugificar(nombre_tono)}-${idCorto}`,
         familia_tono: familia,
         tipo: TIPO_POR_CATEGORIA[categoria.id],
         // Texto plano — sin HTML libre en descripciones (spec §7).

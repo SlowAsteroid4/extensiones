@@ -10,7 +10,6 @@ export const FAMILIAS_TONO = [
 
 export type FamiliaTono = (typeof FAMILIAS_TONO)[number];
 
-// Largos disponibles para variantes (encargo T3): valores literales del encargo.
-// Unidad pendiente de confirmar con el Arquitecto (¿pulgadas mal etiquetadas como cm?).
+// Largos disponibles para variantes, en PULGADAS (resolución de la mesa en T4).
 export const LARGOS_DISPONIBLES = [18, 20, 22, 24] as const;
 export type LargoDisponible = (typeof LARGOS_DISPONIBLES)[number];

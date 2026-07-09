@@ -1,11 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
+  MENSAJE_EMAIL,
+  MENSAJE_PASSWORD,
   categoriaSchema,
   cuentaSchema,
   familiaTonoSchema,
+  favoritoSchema,
+  filtrosCatalogoSchema,
   pedidoItemSchema,
   pedidoSchema,
   productoSchema,
+  registroSchema,
   testimonioSchema,
   varianteLargoSchema,
 } from "./schemas";
@@ -26,6 +31,7 @@ describe("familiaTonoSchema", () => {
 describe("productoSchema", () => {
   const productoValido = {
     nombre_tono: "Rubio Dorado Miel",
+    slug: "rubio-dorado-miel-rub-004",
     familia_tono: "rubios",
     tipo: "clip",
     descripcion: "Extensión de cabello natural en tono rubio dorado miel.",
@@ -49,7 +55,7 @@ describe("productoSchema", () => {
 });
 
 describe("varianteLargoSchema", () => {
-  const varianteValida = { largo_cm: 20, precio_mxn: 249000, existencias: 5, sku: "EXT-RUB-001-20" };
+  const varianteValida = { largo_pulgadas: 20, precio_mxn: 249000, existencias: 5, sku: "EXT-RUB-001-20" };
 
   it("acepta una variante válida", () => {
     expect(varianteLargoSchema.safeParse(varianteValida).success).toBe(true);
@@ -60,7 +66,7 @@ describe("varianteLargoSchema", () => {
   });
 
   it("rechaza largos fuera de {18, 20, 22, 24}", () => {
-    expect(varianteLargoSchema.safeParse({ ...varianteValida, largo_cm: 26 }).success).toBe(false);
+    expect(varianteLargoSchema.safeParse({ ...varianteValida, largo_pulgadas: 26 }).success).toBe(false);
   });
 
   it("rechaza precio no positivo o con decimales", () => {
@@ -112,6 +118,52 @@ describe("pedidoItemSchema", () => {
     const item = { variante_id: "var_x", cantidad: 2, precio_unitario_congelado: 199000 };
     expect(pedidoItemSchema.safeParse(item).success).toBe(true);
     expect(pedidoItemSchema.safeParse({ ...item, cantidad: 0 }).success).toBe(false);
+  });
+});
+
+describe("registroSchema (H07)", () => {
+  it("acepta email válido y contraseña de 8+", () => {
+    const resultado = registroSchema.safeParse({ email: "Ana@Example.com", password: "12345678" });
+    expect(resultado.success).toBe(true);
+    expect(resultado.success && resultado.data.email).toBe("ana@example.com"); // normaliza a minúsculas
+  });
+
+  it("rechaza contraseña <8 con el mensaje del requisito exacto", () => {
+    const resultado = registroSchema.safeParse({ email: "ana@example.com", password: "1234567" });
+    expect(resultado.success).toBe(false);
+    expect(!resultado.success && resultado.error.issues[0].message).toBe(MENSAJE_PASSWORD);
+  });
+
+  it("rechaza email con formato inválido con mensaje claro", () => {
+    const resultado = registroSchema.safeParse({ email: "no-es-email", password: "12345678" });
+    expect(resultado.success).toBe(false);
+    expect(!resultado.success && resultado.error.issues[0].message).toBe(MENSAJE_EMAIL);
+  });
+
+  it("rechaza HTML en el nombre", () => {
+    const resultado = registroSchema.safeParse({
+      email: "ana@example.com",
+      password: "12345678",
+      nombre: "<img src=x>",
+    });
+    expect(resultado.success).toBe(false);
+  });
+});
+
+describe("favoritoSchema y filtrosCatalogoSchema (T4)", () => {
+  it("favorito exige producto_id no vacío", () => {
+    expect(favoritoSchema.safeParse({ producto_id: "prod_rub_001" }).success).toBe(true);
+    expect(favoritoSchema.safeParse({ producto_id: "" }).success).toBe(false);
+  });
+
+  it("filtros: coerciona largo numérico y rechaza no numérico", () => {
+    const ok = filtrosCatalogoSchema.safeParse({ largo: "20" });
+    expect(ok.success && ok.data.largo).toBe(20);
+    expect(filtrosCatalogoSchema.safeParse({ largo: "abc" }).success).toBe(false);
+  });
+
+  it("filtros: todos opcionales (sin filtros = catálogo completo)", () => {
+    expect(filtrosCatalogoSchema.safeParse({}).success).toBe(true);
   });
 });
 

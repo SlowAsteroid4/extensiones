@@ -1,7 +1,5 @@
-// Schema T3 — spec técnica §2, literal. 8 entidades.
+// Schema — spec técnica §2, literal (8 entidades) + migraciones aditivas de T4.
 // Dinero: enteros en CENTAVOS de MXN (precio_mxn, total_mxn, precio_unitario_congelado).
-// largo_cm: guarda los valores literales del encargo {18, 20, 22, 24} — ver handoff T3,
-// pregunta abierta sobre unidad (el encargo los cierra con marca de pulgadas).
 
 generator client {
   provider = "prisma-client"
@@ -36,6 +34,8 @@ model Categoria {
 model Producto {
   id           String   @id @default(cuid())
   nombre_tono  String
+  // T4: slug único para la ficha pública, generado en seed (nombre_tono + id corto).
+  slug         String   @unique
   // Enum editable (spec §2): String validado contra la lista editable en
   // src/shared/validacion/familias.ts — un enum de Postgres no sería editable sin migración.
   familia_tono String
@@ -55,18 +55,19 @@ model Producto {
 }
 
 // Precio y existencias viven en la VARIANTE, no en el producto (spec §2).
+// T4: largo_cm → largo_pulgadas (resolución de la mesa: 18/20/22/24 son pulgadas).
 model VarianteLargo {
-  id          String @id @default(cuid())
-  producto_id String
-  largo_cm    Int
-  precio_mxn  Int
-  existencias Int
-  sku         String @unique
+  id              String @id @default(cuid())
+  producto_id     String
+  largo_pulgadas  Int
+  precio_mxn      Int
+  existencias     Int
+  sku             String @unique
 
   producto     Producto     @relation(fields: [producto_id], references: [id])
   pedido_items PedidoItem[]
 
-  @@index([largo_cm])
+  @@index([largo_pulgadas])
 }
 
 model Cuenta {
