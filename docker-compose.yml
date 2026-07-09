@@ -1,0 +1,17 @@
+# Postgres local de desarrollo (spec T3). Los valores reales van en .env
+# (docker compose lo lee automáticamente); los defaults son solo para dev local.
+services:
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-extensiones}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-extensiones_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-extensiones}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
