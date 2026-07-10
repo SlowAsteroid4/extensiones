@@ -1,6 +1,6 @@
 "use client";
 // Button + IconButton del DS "Magenta audaz" (components/buttons/*.jsx).
-// Reglas portadas: label ≥14/700; primary usa fill #C6006E (AA con blanco);
+// Reglas portadas: label ≥14/700; primary usa fill btn-primary (magenta hondo, AA con blanco);
 // hover oscurece, press scale(0.97) / icon 0.92; pill; icono exento de la
 // regla de texto magenta. hover/press JS del bundle → pseudo-clases CSS.
 import type { ButtonHTMLAttributes, ReactNode } from "react";

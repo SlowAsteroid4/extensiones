@@ -122,7 +122,7 @@ export function CampoFormulario({
   );
 }
 
-/* ── Chip — pill de filtro. Activo = fill #C6006E texto blanco. ── */
+/* ── Chip — pill de filtro. Activo = fill btn-primary con texto blanco. ── */
 
 export function Chip({
   children,
