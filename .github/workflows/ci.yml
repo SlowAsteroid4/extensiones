@@ -32,6 +32,9 @@ jobs:
       SEED_ADMIN_EMAIL: admin@extensiones.local
       SEED_ADMIN_PASSWORD: ci-seed-admin-1234
       AUTH_SECRET: ci-secret-solo-para-tests
+      # T5: suite hermética — provider fake y secreto de webhook de fixture.
+      PASARELA_PROVIDER: fake
+      MERCADOPAGO_WEBHOOK_SECRET: ci-webhook-secret-fixture
 
     steps:
       - uses: actions/checkout@v7

@@ -1,17 +1,67 @@
 {
   "info": {
     "_postman_id": "7f3f2f60-t4-extensiones-api-fase1",
-    "name": "extensiones · API fase 1 (T4)",
+    "name": "extensiones · API fases 1+2 (T4+T5)",
     "description": "Catálogo + cuentas + favoritos. Requiere el server local (`npm run dev`) con la base seedeada.\n\nFlujo de sesión: 1) `CSRF token` 2) `Login` (Postman guarda la cookie) 3) endpoints de favoritos 4) `Logout`.\n\nLogin/logout/sesión usan las rutas nativas de Auth.js (convención propia): `/api/auth/csrf`, `/api/auth/callback/credentials`, `/api/auth/session`, `/api/auth/signout`.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:3000" },
-    { "key": "emailPrueba", "value": "clienta.postman@example.com" },
-    { "key": "passwordPrueba", "value": "clave-segura-123" },
-    { "key": "csrfToken", "value": "" },
-    { "key": "slugEjemplo", "value": "rubio-platino-artico-rub-001" },
-    { "key": "productoEjemplo", "value": "prod_rub_001" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "emailPrueba",
+      "value": "clienta.postman@example.com"
+    },
+    {
+      "key": "passwordPrueba",
+      "value": "clave-segura-123"
+    },
+    {
+      "key": "csrfToken",
+      "value": ""
+    },
+    {
+      "key": "slugEjemplo",
+      "value": "rubio-platino-artico-rub-001"
+    },
+    {
+      "key": "productoEjemplo",
+      "value": "prod_rub_001"
+    },
+    {
+      "key": "varianteEjemplo",
+      "value": "var_rub_001_22"
+    },
+    {
+      "key": "folio",
+      "value": ""
+    },
+    {
+      "key": "webhookSecret",
+      "value": "test-secret-local-only"
+    },
+    {
+      "key": "adminEmail",
+      "value": "admin@extensiones.local"
+    },
+    {
+      "key": "adminPassword",
+      "value": "admin-dev-cambiame-1234"
+    },
+    {
+      "key": "productoAdminId",
+      "value": ""
+    },
+    {
+      "key": "varianteAdminId",
+      "value": ""
+    },
+    {
+      "key": "testimonioAdminId",
+      "value": ""
+    }
   ],
   "item": [
     {
@@ -19,63 +69,219 @@
       "item": [
         {
           "name": "Categorías — happy (200, ordenadas por orden)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"lista\", () => pm.expect(pm.response.json().length).to.be.at.least(3));"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/categorias" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"lista\", () => pm.expect(pm.response.json().length).to.be.at.least(3));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/categorias"
+          }
         },
         {
           "name": "Categorías — unhappy: método no permitido (405)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"405\", () => pm.response.to.have.status(405));"] } }],
-          "request": { "method": "POST", "url": "{{baseUrl}}/api/categorias" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"405\", () => pm.response.to.have.status(405));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/categorias"
+          }
         },
         {
           "name": "Productos — AND 2 filtros: familia+tipo (200)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "const r = pm.response.json();", "pm.test(\"AND estricto\", () => r.productos.every(p => p.familia_tono === 'rubios' && p.tipo === 'clip'));"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos?familia=rubios&tipo=clip" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"AND estricto\", () => r.productos.every(p => p.familia_tono === 'rubios' && p.tipo === 'clip'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/productos?familia=rubios&tipo=clip"
+          }
         },
         {
           "name": "Productos — AND 3 filtros: familia+tipo+largo (200)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "const r = pm.response.json();", "pm.test(\"AND estricto con largo\", () => r.productos.every(p => p.familia_tono === 'rubios' && p.tipo === 'clip' && p.variantes.some(v => v.largo_pulgadas === 20)));"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos?familia=rubios&tipo=clip&largo=20" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"AND estricto con largo\", () => r.productos.every(p => p.familia_tono === 'rubios' && p.tipo === 'clip' && p.variantes.some(v => v.largo_pulgadas === 20)));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/productos?familia=rubios&tipo=clip&largo=20"
+          }
         },
         {
           "name": "Productos — búsqueda por nombre de tono (200)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"resultados con 'miel'\", () => pm.response.json().productos.every(p => p.nombre_tono.toLowerCase().includes('miel')));"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos?q=miel" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"resultados con 'miel'\", () => pm.response.json().productos.every(p => p.nombre_tono.toLowerCase().includes('miel')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/productos?q=miel"
+          }
         },
         {
           "name": "Productos — 0 resultados es válido (200, lista vacía)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"vacía sin error\", () => pm.expect(pm.response.json().total).to.eql(0));"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos?familia=negros&q=platino" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"vacía sin error\", () => pm.expect(pm.response.json().total).to.eql(0));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/productos?familia=negros&q=platino"
+          }
         },
         {
           "name": "Productos — unhappy: largo no numérico (400)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"400\", () => pm.response.to.have.status(400));", "pm.test(\"{ error }\", () => pm.expect(pm.response.json().error).to.be.a('string'));"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos?largo=abc" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"{ error }\", () => pm.expect(pm.response.json().error).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/productos?largo=abc"
+          }
         },
         {
           "name": "Facetas — happy (200, solo valores existentes)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "const r = pm.response.json();", "pm.test(\"5 familias, largos 18-24\", () => { pm.expect(r.familias.length).to.eql(5); pm.expect(r.largos).to.eql([18,20,22,24]); });"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos/facetas" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"5 familias, largos 18-24\", () => { pm.expect(r.familias.length).to.eql(5); pm.expect(r.largos).to.eql([18,20,22,24]); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/productos/facetas"
+          }
         },
         {
           "name": "Ficha por slug — happy (200, agotadas incluidas)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"3 variantes\", () => pm.expect(pm.response.json().variantes.length).to.eql(3));"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos/{{slugEjemplo}}" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"3 variantes\", () => pm.expect(pm.response.json().variantes.length).to.eql(3));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/productos/{{slugEjemplo}}"
+          }
         },
         {
           "name": "Ficha por slug — unhappy: inexistente/inactivo (404)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"404\", () => pm.response.to.have.status(404));"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/productos/no-existe-000" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/productos/no-existe-000"
+          }
         },
         {
           "name": "Testimonios — happy (200, 6 activos por orden)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"6 testimonios\", () => pm.expect(pm.response.json().length).to.eql(6));"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/testimonios" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"6 testimonios\", () => pm.expect(pm.response.json().length).to.eql(6));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/testimonios"
+          }
         },
         {
           "name": "Testimonios — unhappy: método no permitido (405)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"405\", () => pm.response.to.have.status(405));"] } }],
-          "request": { "method": "POST", "url": "{{baseUrl}}/api/testimonios" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"405\", () => pm.response.to.have.status(405));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/testimonios"
+          }
         }
       ]
     },
@@ -84,114 +290,321 @@
       "item": [
         {
           "name": "Registro — happy (201; en re-corridas 409 porque ya existe)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"201 nueva o 409 ya creada\", () => pm.expect([201, 409]).to.include(pm.response.code));"] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"201 nueva o 409 ya creada\", () => pm.expect([201, 409]).to.include(pm.response.code));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{emailPrueba}}\",\n  \"password\": \"{{passwordPrueba}}\",\n  \"nombre\": \"Clienta Postman\"\n}" },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailPrueba}}\",\n  \"password\": \"{{passwordPrueba}}\",\n  \"nombre\": \"Clienta Postman\"\n}"
+            },
             "url": "{{baseUrl}}/api/cuenta/registro"
           }
         },
         {
           "name": "Registro — unhappy: duplicado (409, sin crear)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"409\", () => pm.response.to.have.status(409));", "pm.test(\"aviso\", () => pm.expect(pm.response.json().error).to.eql('Ese correo ya está registrado.'));"] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"aviso\", () => pm.expect(pm.response.json().error).to.eql('Ese correo ya está registrado.'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{emailPrueba}}\",\n  \"password\": \"{{passwordPrueba}}\"\n}" },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailPrueba}}\",\n  \"password\": \"{{passwordPrueba}}\"\n}"
+            },
             "url": "{{baseUrl}}/api/cuenta/registro"
           }
         },
         {
           "name": "Registro — unhappy: contraseña <8 (400 con requisito exacto)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"400\", () => pm.response.to.have.status(400));", "pm.test(\"mensaje exacto\", () => pm.expect(pm.response.json().error).to.eql('La contraseña debe tener al menos 8 caracteres'));"] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"mensaje exacto\", () => pm.expect(pm.response.json().error).to.eql('La contraseña debe tener al menos 8 caracteres'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"otra@example.com\",\n  \"password\": \"1234567\"\n}" },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"otra@example.com\",\n  \"password\": \"1234567\"\n}"
+            },
             "url": "{{baseUrl}}/api/cuenta/registro"
           }
         },
         {
           "name": "Registro — unhappy: email inválido (400)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"400\", () => pm.response.to.have.status(400));", "pm.test(\"mensaje claro\", () => pm.expect(pm.response.json().error).to.eql('El correo no tiene un formato válido'));"] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"mensaje claro\", () => pm.expect(pm.response.json().error).to.eql('El correo no tiene un formato válido'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"email\": \"no-es-email\",\n  \"password\": \"12345678\"\n}" },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"no-es-email\",\n  \"password\": \"12345678\"\n}"
+            },
             "url": "{{baseUrl}}/api/cuenta/registro"
           }
         },
         {
           "name": "CSRF token (Auth.js) — guarda {{csrfToken}}",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.collectionVariables.set('csrfToken', pm.response.json().csrfToken);"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/csrf" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('csrfToken', pm.response.json().csrfToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/csrf"
+          }
         },
         {
           "name": "Login — happy (cookie de sesión; correr CSRF antes)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"login ok (redirige sin error)\", () => { pm.expect(pm.response.code).to.be.oneOf([200, 302]); pm.expect(pm.response.text()).to.not.include('CredentialsSignin'); });"] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"login ok (redirige sin error)\", () => { pm.expect(pm.response.code).to.be.oneOf([200, 302]); pm.expect(pm.response.text()).to.not.include('CredentialsSignin'); });"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
-            "body": { "mode": "urlencoded", "urlencoded": [
-              { "key": "csrfToken", "value": "{{csrfToken}}" },
-              { "key": "email", "value": "{{emailPrueba}}" },
-              { "key": "password", "value": "{{passwordPrueba}}" }
-            ] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "csrfToken",
+                  "value": "{{csrfToken}}"
+                },
+                {
+                  "key": "email",
+                  "value": "{{emailPrueba}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{passwordPrueba}}"
+                }
+              ]
+            },
             "url": "{{baseUrl}}/api/auth/callback/credentials"
           }
         },
         {
           "name": "Sesión — happy (usuario presente tras login)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200 con user\", () => { pm.response.to.have.status(200); pm.expect(pm.response.json().user).to.be.an('object'); });"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/session" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200 con user\", () => { pm.response.to.have.status(200); pm.expect(pm.response.json().user).to.be.an('object'); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/session"
+          }
         },
         {
           "name": "Login — unhappy: credenciales inválidas (error genérico)",
           "description": "Correr CSRF antes. El error es genérico: no dice qué campo falló.",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"error genérico de credenciales\", () => pm.expect(pm.response.text()).to.include('error'));"] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"error genérico de credenciales\", () => pm.expect(pm.response.text()).to.include('error'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
-            "body": { "mode": "urlencoded", "urlencoded": [
-              { "key": "csrfToken", "value": "{{csrfToken}}" },
-              { "key": "email", "value": "{{emailPrueba}}" },
-              { "key": "password", "value": "contrasena-incorrecta" }
-            ] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "csrfToken",
+                  "value": "{{csrfToken}}"
+                },
+                {
+                  "key": "email",
+                  "value": "{{emailPrueba}}"
+                },
+                {
+                  "key": "password",
+                  "value": "contrasena-incorrecta"
+                }
+              ]
+            },
             "url": "{{baseUrl}}/api/auth/callback/credentials"
           }
         },
         {
           "name": "Login — unhappy: 6.º intento fallido → 429",
           "description": "Correr 'credenciales inválidas' 5 veces con el mismo email; este 6.º intento responde 429 con mensaje de espera.",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"429\", () => pm.response.to.have.status(429));", "pm.test(\"mensaje de espera\", () => pm.expect(pm.response.json().error).to.include('15 minutos'));"] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"429\", () => pm.response.to.have.status(429));",
+                  "pm.test(\"mensaje de espera\", () => pm.expect(pm.response.json().error).to.include('15 minutos'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
-            "body": { "mode": "urlencoded", "urlencoded": [
-              { "key": "csrfToken", "value": "{{csrfToken}}" },
-              { "key": "email", "value": "{{emailPrueba}}" },
-              { "key": "password", "value": "contrasena-incorrecta" }
-            ] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "csrfToken",
+                  "value": "{{csrfToken}}"
+                },
+                {
+                  "key": "email",
+                  "value": "{{emailPrueba}}"
+                },
+                {
+                  "key": "password",
+                  "value": "contrasena-incorrecta"
+                }
+              ]
+            },
             "url": "{{baseUrl}}/api/auth/callback/credentials"
           }
         },
         {
           "name": "Logout (signout; correr CSRF antes)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"cierra sesión\", () => pm.expect(pm.response.code).to.be.oneOf([200, 302]));"] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"cierra sesión\", () => pm.expect(pm.response.code).to.be.oneOf([200, 302]));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/x-www-form-urlencoded" }],
-            "body": { "mode": "urlencoded", "urlencoded": [
-              { "key": "csrfToken", "value": "{{csrfToken}}" }
-            ] },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "csrfToken",
+                  "value": "{{csrfToken}}"
+                }
+              ]
+            },
             "url": "{{baseUrl}}/api/auth/signout"
           }
         },
         {
           "name": "Sesión tras logout — unhappy (sin usuario)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"sin sesión\", () => { const body = pm.response.text(); pm.expect(body === 'null' || !JSON.parse(body || '{}').user).to.be.true; });"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/auth/session" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"sin sesión\", () => { const body = pm.response.text(); pm.expect(body === 'null' || !JSON.parse(body || '{}').user).to.be.true; });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/session"
+          }
         }
       ]
     },
@@ -201,53 +614,1184 @@
         {
           "name": "Listar — unhappy: sin sesión (401)",
           "description": "Correr con la sesión cerrada (después de Logout).",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"401\", () => pm.response.to.have.status(401));", "pm.test(\"{ error }\", () => pm.expect(pm.response.json().error).to.be.a('string'));"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/favoritos" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"{ error }\", () => pm.expect(pm.response.json().error).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/favoritos"
+          }
         },
         {
           "name": "Agregar — happy (201; requiere login)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"201\", () => pm.response.to.have.status(201));"] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"201\", () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"producto_id\": \"{{productoEjemplo}}\"\n}" },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"producto_id\": \"{{productoEjemplo}}\"\n}"
+            },
             "url": "{{baseUrl}}/api/favoritos"
           }
         },
         {
           "name": "Agregar — unhappy: cuerpo inválido (400)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"400\", () => pm.response.to.have.status(400));"] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"400\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{}" },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
             "url": "{{baseUrl}}/api/favoritos"
           }
         },
         {
           "name": "Agregar — unhappy: producto inexistente (404)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"404\", () => pm.response.to.have.status(404));"] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"404\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"producto_id\": \"prod_no_existe\"\n}" },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"producto_id\": \"prod_no_existe\"\n}"
+            },
             "url": "{{baseUrl}}/api/favoritos"
           }
         },
         {
           "name": "Listar — happy (favoritos de la cuenta en sesión)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"lista\", () => pm.expect(pm.response.json()).to.be.an('array'));"] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/favoritos" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"lista\", () => pm.expect(pm.response.json()).to.be.an('array'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/favoritos"
+          }
         },
         {
           "name": "Quitar — happy (200, eliminado: true)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200\", () => pm.response.to.have.status(200));", "pm.test(\"eliminado\", () => pm.expect(pm.response.json().eliminado).to.eql(true));"] } }],
-          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/favoritos?producto_id={{productoEjemplo}}" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"eliminado\", () => pm.expect(pm.response.json().eliminado).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/favoritos?producto_id={{productoEjemplo}}"
+          }
         },
         {
           "name": "Quitar — idempotente (200, eliminado: false, sin error)",
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test(\"200 aunque ya no estaba\", () => pm.response.to.have.status(200));", "pm.test(\"eliminado false\", () => pm.expect(pm.response.json().eliminado).to.eql(false));"] } }],
-          "request": { "method": "DELETE", "url": "{{baseUrl}}/api/favoritos?producto_id={{productoEjemplo}}" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200 aunque ya no estaba\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"eliminado false\", () => pm.expect(pm.response.json().eliminado).to.eql(false));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/favoritos?producto_id={{productoEjemplo}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pedidos (T5)",
+      "item": [
+        {
+          "name": "Checkout happy (invitada) → 201 + folio + init_point",
+          "request": {
+            "method": "POST",
+            "description": "FASE A: con PASARELA_PROVIDER=fake el init_point es SINTÉTICO (fixture), pendiente de credenciales reales de MP para el sandbox real. Guarda {{folio}} para los requests siguientes.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"variante_id\": \"{{varianteEjemplo}}\",\n      \"cantidad\": 1\n    }\n  ],\n  \"email_contacto\": \"invitada.postman@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201 con folio LS-XXXXXX', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j.folio).to.match(/^LS-[A-HJ-NP-Z2-9]{6}$/);",
+                  "  pm.expect(j.init_point).to.be.a('string');",
+                  "  pm.collectionVariables.set('folio', j.folio);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Checkout unhappy: cantidad > stock → 409 con detalle por item",
+          "request": {
+            "method": "POST",
+            "description": "H04: el detalle marca la fila exacta del carrito.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"variante_id\": \"{{varianteEjemplo}}\",\n      \"cantidad\": 99\n    }\n  ],\n  \"email_contacto\": \"invitada.postman@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409 con detalles[]', () => {",
+                  "  pm.response.to.have.status(409);",
+                  "  pm.expect(pm.response.json().detalles).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Checkout unhappy: carrito vacío → 400",
+          "request": {
+            "method": "POST",
+            "description": "H04: validación zod server-side.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [],\n  \"email_contacto\": \"invitada.postman@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consulta por folio → 200 (H06, solo lectura)",
+          "request": {
+            "method": "GET",
+            "description": "N consultas no generan cargos ni efectos.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/{{folio}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos",
+                "{{folio}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con items y estado', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const j = pm.response.json();",
+                  "  pm.expect(j).to.have.keys(['folio','estado','total_mxn','creado_en','items']);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consulta folio inexistente → 404",
+          "request": {
+            "method": "GET",
+            "description": "Unhappy de H06.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/pedidos/LS-NADA99",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "pedidos",
+                "LS-NADA99"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Webhook firma VÁLIDA: pago aprobado → pagado_sandbox + decremento",
+          "request": {
+            "method": "POST",
+            "description": "FASE A: pago sintético del provider fake (data.id codifica resultado y folio). El pre-request firma con HMAC-SHA256 igual que MP, usando {{webhookSecret}}.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/webhooks/mercadopago?type=payment&data.id=fake-pago-aprobado-{{folio}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "webhooks",
+                "mercadopago"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "payment"
+                },
+                {
+                  "key": "data.id",
+                  "value": "fake-pago-aprobado-{{folio}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"payment\",\n  \"data\": {\n    \"id\": \"fake-pago-aprobado-{{folio}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Firma el request EXACTAMENTE como MercadoPago: HMAC-SHA256 del manifest",
+                  "// 'id:<data.id>;request-id:<x-request-id>;ts:<ts>;' con el secreto de env.",
+                  "const dataId = pm.variables.replaceIn(pm.request.url.query.get('data.id'));",
+                  "const requestId = 'postman-' + Date.now();",
+                  "const ts = String(Math.floor(Date.now() / 1000));",
+                  "const manifest = `id:${dataId.toLowerCase()};request-id:${requestId};ts:${ts};`;",
+                  "const secreto = pm.collectionVariables.get('webhookSecret');",
+                  "const v1 = CryptoJS.HmacSHA256(manifest, secreto).toString(CryptoJS.enc.Hex);",
+                  "pm.request.headers.upsert({ key: 'x-request-id', value: requestId });",
+                  "pm.request.headers.upsert({ key: 'x-signature', value: `ts=${ts},v1=${v1}` });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 procesado (pagado o ya_pagado si se repite)', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(['pagado','ya_pagado']).to.include(pm.response.json().resultado);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Webhook DUPLICADO → ya_pagado, sin doble decremento",
+          "request": {
+            "method": "POST",
+            "description": "3.D.4: reenvía el mismo evento; el stock no vuelve a bajar.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/webhooks/mercadopago?type=payment&data.id=fake-pago-aprobado-{{folio}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "webhooks",
+                "mercadopago"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "payment"
+                },
+                {
+                  "key": "data.id",
+                  "value": "fake-pago-aprobado-{{folio}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"payment\",\n  \"data\": {\n    \"id\": \"fake-pago-aprobado-{{folio}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Firma el request EXACTAMENTE como MercadoPago: HMAC-SHA256 del manifest",
+                  "// 'id:<data.id>;request-id:<x-request-id>;ts:<ts>;' con el secreto de env.",
+                  "const dataId = pm.variables.replaceIn(pm.request.url.query.get('data.id'));",
+                  "const requestId = 'postman-' + Date.now();",
+                  "const ts = String(Math.floor(Date.now() / 1000));",
+                  "const manifest = `id:${dataId.toLowerCase()};request-id:${requestId};ts:${ts};`;",
+                  "const secreto = pm.collectionVariables.get('webhookSecret');",
+                  "const v1 = CryptoJS.HmacSHA256(manifest, secreto).toString(CryptoJS.enc.Hex);",
+                  "pm.request.headers.upsert({ key: 'x-request-id', value: requestId });",
+                  "pm.request.headers.upsert({ key: 'x-signature', value: `ts=${ts},v1=${v1}` });"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 ya_pagado', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().resultado).to.eql('ya_pagado');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Webhook firma INVÁLIDA → 401 sin efectos",
+          "request": {
+            "method": "POST",
+            "description": "spec §7: rechazo explícito. Header x-signature con hash corrupto.",
+            "header": [
+              {
+                "key": "x-signature",
+                "value": "ts=1720548000,v1=deadbeef"
+              },
+              {
+                "key": "x-request-id",
+                "value": "postman-invalido"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/webhooks/mercadopago?type=payment&data.id=fake-pago-aprobado-{{folio}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "webhooks",
+                "mercadopago"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "payment"
+                },
+                {
+                  "key": "data.id",
+                  "value": "fake-pago-aprobado-{{folio}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"payment\",\n  \"data\": {\n    \"id\": \"fake-pago-aprobado-{{folio}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 Firma inválida', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "  pm.expect(pm.response.json().error).to.eql('Firma inválida');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin (T5)",
+      "item": [
+        {
+          "name": "ADMIN sin sesión → 401",
+          "request": {
+            "method": "GET",
+            "description": "spec §7. Corre sin cookies (usa un cookie jar limpio o borra la cookie de sesión).",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "productos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "ADMIN con sesión de clienta → 403",
+          "request": {
+            "method": "GET",
+            "description": "spec §7: loguéate antes con la clienta ({{emailPrueba}}) vía la carpeta Cuenta; estar logueada NO basta.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "productos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login ADMIN (usa credenciales del seed en tu .env)",
+          "request": {
+            "method": "POST",
+            "description": "Antes corre GET /api/auth/csrf (carpeta Cuenta). Usa {{adminEmail}}/{{adminPassword}} (= SEED_ADMIN_EMAIL/SEED_ADMIN_PASSWORD de tu .env).",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/callback/credentials",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "callback",
+                "credentials"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Productos: lista con buscador (?q=) → 200",
+          "request": {
+            "method": "GET",
+            "description": "H15: el panel también ve inactivos.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/productos?q=rubio",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "productos"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "rubio"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con total', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().total).to.be.a('number');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Productos: crear → 201 (aparece en catálogo y facetas)",
+          "request": {
+            "method": "POST",
+            "description": "H15: slug y sku se autogeneran. Verifica después GET /api/productos?tipo=cortina y GET /api/productos/facetas.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "productos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre_tono\": \"Cortina Postman\",\n  \"familia_tono\": \"rubios\",\n  \"tipo\": \"cortina\",\n  \"descripcion\": \"Producto creado desde Postman.\",\n  \"fotos\": [],\n  \"categoria_id\": \"cat_clip\",\n  \"variantes\": [\n    {\n      \"largo_pulgadas\": 20,\n      \"precio_mxn\": 259000,\n      \"existencias\": 5\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.collectionVariables.set('productoAdminId', pm.response.json().id);",
+                  "  pm.collectionVariables.set('varianteAdminId', pm.response.json().variantes[0].id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Productos: crear sin variantes → 400 con errores POR CAMPO",
+          "request": {
+            "method": "POST",
+            "description": "H15 unhappy.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/productos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "productos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tipo\": \"cortina\",\n  \"variantes\": []\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 con errores[]', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().errores).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Productos: editar campos + variantes → 200",
+          "request": {
+            "method": "PATCH",
+            "description": "H16: base + agregar/editar/quitar variantes en una operación.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/productos/{{productoAdminId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "productos",
+                "{{productoAdminId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre_tono\": \"Cortina Postman Editada\",\n  \"variantes\": {\n    \"crear\": [\n      {\n        \"largo_pulgadas\": 24,\n        \"precio_mxn\": 299000,\n        \"existencias\": 3\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Productos: desactivar (toggle activo) → 200",
+          "request": {
+            "method": "PATCH",
+            "description": "H19: efecto inmediato — fuera del listado público, ficha 404, checkout rechazado.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/productos/{{productoAdminId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "productos",
+                "{{productoAdminId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activo\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 y quedó inactivo', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().activo).to.eql(false);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Variante: existencias/precio rápido → 200",
+          "request": {
+            "method": "PATCH",
+            "description": "H17 happy.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/variantes/{{varianteAdminId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "variantes",
+                "{{varianteAdminId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"existencias\": 0,\n  \"precio_mxn\": 219000\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Variante: valor inválido → 400 SIN sobreescribir",
+          "request": {
+            "method": "PATCH",
+            "description": "H17 unhappy: existencias negativas jamás se escriben.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/variantes/{{varianteAdminId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "variantes",
+                "{{varianteAdminId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"existencias\": -5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Testimonios: lista del panel → 200 (incluye inactivos)",
+          "request": {
+            "method": "GET",
+            "description": "H18.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/testimonios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "testimonios"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Testimonios: crear → 201 (visible en público)",
+          "request": {
+            "method": "POST",
+            "description": "H18: verifica después GET /api/testimonios.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/testimonios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "testimonios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Clienta Postman\",\n  \"texto\": \"Testimonio desde Postman.\",\n  \"orden\": 7,\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  pm.collectionVariables.set('testimonioAdminId', pm.response.json().id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Testimonios: crear con HTML → 400",
+          "request": {
+            "method": "POST",
+            "description": "spec §7 unhappy.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/testimonios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "testimonios"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Clienta Postman\",\n  \"texto\": \"con <b>html</b>\",\n  \"orden\": 8,\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Testimonios: toggle activo=false → 200 (desaparece de público)",
+          "request": {
+            "method": "PATCH",
+            "description": "H18.",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/testimonios/{{testimonioAdminId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "testimonios",
+                "{{testimonioAdminId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activo\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Testimonios: baja → 200 · repetir → 404",
+          "request": {
+            "method": "DELETE",
+            "description": "H18 baja definitiva.",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/testimonios/{{testimonioAdminId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "testimonios",
+                "{{testimonioAdminId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 o 404 si ya se borró', () => {",
+                  "  pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
         }
       ]
     }

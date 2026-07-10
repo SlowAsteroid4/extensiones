@@ -111,3 +111,91 @@ export const filtrosCatalogoSchema = z.object({
   q: z.string().min(1).max(100).optional(),
   categoria: z.string().min(1).max(80).optional(),
 });
+
+// ── T5 · API fase 2 ──────────────────────────────────────────────────────────
+
+// H04/H05: checkout. cuenta_id NUNCA viene en el body (se toma del token de sesión).
+export const itemCheckoutSchema = z.object({
+  variante_id: z.string().min(1, "variante_id es requerido"),
+  cantidad: z.number().int("cantidad debe ser un entero").min(1, "cantidad mínima: 1").max(99),
+});
+
+export const checkoutSchema = z.object({
+  items: z.array(itemCheckoutSchema).min(1, "El carrito está vacío").max(30),
+  email_contacto: z.email(MENSAJE_EMAIL),
+  telefono_contacto: z
+    .string()
+    .regex(/^\d{10}$/, "teléfono a 10 dígitos")
+    .optional(),
+});
+
+// H15: crear producto desde el panel. El slug se genera server-side; el sku de
+// cada variante es opcional (se autogenera si falta).
+export const varianteNuevaSchema = varianteLargoSchema.extend({
+  sku: varianteLargoSchema.shape.sku.optional(),
+});
+
+export const productoCrearSchema = z.object({
+  nombre_tono: sinHtml("nombre_tono").pipe(z.string().max(120)),
+  familia_tono: familiaTonoSchema,
+  tipo: sinHtml("tipo").pipe(z.string().max(40)),
+  descripcion: sinHtml("descripcion").pipe(z.string().max(2000)),
+  fotos: z.array(z.string().min(1)).max(12).default([]),
+  categoria_id: z.string().min(1, "categoria_id es requerido"),
+  activo: z.boolean().default(true),
+  variantes: z.array(varianteNuevaSchema).min(1, "Se requiere al menos 1 variante"),
+});
+
+// H16/H19: edición parcial + operaciones sobre variantes (agregar/editar/quitar).
+export const productoEditarSchema = z.object({
+  nombre_tono: sinHtml("nombre_tono").pipe(z.string().max(120)).optional(),
+  familia_tono: familiaTonoSchema.optional(),
+  tipo: sinHtml("tipo").pipe(z.string().max(40)).optional(),
+  descripcion: sinHtml("descripcion").pipe(z.string().max(2000)).optional(),
+  fotos: z.array(z.string().min(1)).max(12).optional(),
+  categoria_id: z.string().min(1).optional(),
+  activo: z.boolean().optional(),
+  variantes: z
+    .object({
+      crear: z.array(varianteNuevaSchema).optional(),
+      actualizar: z
+        .array(
+          z.object({
+            id: z.string().min(1),
+            largo_pulgadas: varianteLargoSchema.shape.largo_pulgadas.optional(),
+            precio_mxn: varianteLargoSchema.shape.precio_mxn.optional(),
+            existencias: varianteLargoSchema.shape.existencias.optional(),
+          })
+        )
+        .optional(),
+      eliminar: z.array(z.string().min(1)).optional(),
+    })
+    .optional(),
+});
+
+// H17: actualización rápida por variante — valor inválido → 400 sin sobreescribir.
+export const varianteRapidaSchema = z
+  .object({
+    precio_mxn: z
+      .number()
+      .int("precio_mxn debe ser un entero (centavos)")
+      .positive("precio_mxn debe ser positivo")
+      .optional(),
+    existencias: z
+      .number()
+      .int("existencias debe ser un entero")
+      .min(0, "existencias no puede ser negativo")
+      .optional(),
+  })
+  .refine((v) => v.precio_mxn !== undefined || v.existencias !== undefined, {
+    message: "Se requiere precio_mxn o existencias",
+  });
+
+// H18: testimonios del panel.
+export const testimonioCrearSchema = testimonioSchema;
+export const testimonioEditarSchema = z.object({
+  nombre: sinHtml("nombre").pipe(z.string().max(80)).optional(),
+  texto: sinHtml("texto").pipe(z.string().max(500)).optional(),
+  orden: z.number().int().min(0).optional(),
+  activo: z.boolean().optional(),
+});
