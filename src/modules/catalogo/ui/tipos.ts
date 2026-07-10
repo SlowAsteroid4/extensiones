@@ -49,13 +49,15 @@ export function etiquetaLargo(pulgadas: number): string {
 }
 
 /** Agotado real: TODAS las variantes en cero (el badge nunca se oculta). */
-export function productoAgotado(p: Pick<ProductoAPI, "variantes">): boolean {
+export function productoAgotado(p: { variantes: { existencias: number }[] }): boolean {
   return p.variantes.length > 0 && p.variantes.every((v) => v.existencias === 0);
 }
 
 /** Variante representativa para la card (primera disponible; si no hay, la
     primera): define largo y precio mostrados y qué agrega el "+". */
-export function varianteRepresentativa(p: Pick<ProductoAPI, "variantes">): VarianteAPI | null {
+export function varianteRepresentativa<V extends { existencias: number }>(p: {
+  variantes: V[];
+}): V | null {
   if (p.variantes.length === 0) return null;
   return p.variantes.find((v) => v.existencias > 0) ?? p.variantes[0];
 }

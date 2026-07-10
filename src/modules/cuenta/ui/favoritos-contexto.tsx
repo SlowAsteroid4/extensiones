@@ -9,7 +9,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -46,35 +45,6 @@ export function ProveedorFavoritos({ children }: { children: ReactNode }) {
   const [cargado, setCargado] = useState(false);
   const [modalAbierto, setModalAbierto] = useState<{ id: string; nombre?: string } | null>(null);
   const [errorToast, setErrorToast] = useState<ContextoFavoritos["errorToast"]>(null);
-  const guardoPendiente = useRef(false);
-
-  // Carga inicial (y tras login) de los favoritos persistidos.
-  useEffect(() => {
-    let cancelado = false;
-    if (!haySesion) {
-      queueMicrotask(() => {
-        if (cancelado) return;
-        setIds(new Set());
-        setCargado(status !== "loading");
-      });
-      return () => {
-        cancelado = true;
-      };
-    }
-    fetch("/api/favoritos")
-      .then((r) => (r.ok ? r.json() : []))
-      .then((lista: { producto_id: string }[]) => {
-        if (cancelado) return;
-        setIds(new Set(lista.map((f) => f.producto_id)));
-        setCargado(true);
-      })
-      .catch(() => {
-        if (!cancelado) setCargado(true);
-      });
-    return () => {
-      cancelado = true;
-    };
-  }, [haySesion, status]);
 
   const persistir = useCallback(
     async (productoId: string, accion: "guardar" | "quitar") => {
@@ -94,6 +64,55 @@ export function ProveedorFavoritos({ children }: { children: ReactNode }) {
     },
     []
   );
+
+  // Carga inicial (y tras login) de los favoritos persistidos. El favorito
+  // PENDIENTE de C5 se resuelve AQUÍ, sobre la misma respuesta del GET: si se
+  // manejara en un effect aparte, la respuesta en vuelo (capturada antes del
+  // POST) pisaría el agregado optimista y el corazón quedaría apagado.
+  useEffect(() => {
+    let cancelado = false;
+    if (!haySesion) {
+      queueMicrotask(() => {
+        if (cancelado) return;
+        setIds(new Set());
+        setCargado(status !== "loading");
+      });
+      return () => {
+        cancelado = true;
+      };
+    }
+    fetch("/api/favoritos")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((lista: { producto_id: string }[]) => {
+        if (cancelado) return;
+        const nuevos = new Set(lista.map((f) => f.producto_id));
+        // H10: al completar el acceso, guarda el favorito pendiente.
+        const pendiente = window.localStorage.getItem(CLAVE_PENDIENTE);
+        if (pendiente) {
+          window.localStorage.removeItem(CLAVE_PENDIENTE);
+          if (!nuevos.has(pendiente)) {
+            nuevos.add(pendiente);
+            persistir(pendiente, "guardar").catch(() => {
+              if (cancelado) return;
+              setIds((prev) => {
+                const revertido = new Set(prev);
+                revertido.delete(pendiente);
+                return revertido;
+              });
+              setErrorToast({ productoId: pendiente, accion: "guardar" });
+            });
+          }
+        }
+        setIds(nuevos);
+        setCargado(true);
+      })
+      .catch(() => {
+        if (!cancelado) setCargado(true);
+      });
+    return () => {
+      cancelado = true;
+    };
+  }, [haySesion, status, persistir]);
 
   const alternar = useCallback(
     async (productoId: string, nombre?: string) => {
@@ -125,27 +144,6 @@ export function ProveedorFavoritos({ children }: { children: ReactNode }) {
     },
     [haySesion, ids, persistir]
   );
-
-  // H10: al completar el acceso, guarda el favorito pendiente.
-  useEffect(() => {
-    if (!haySesion || !cargado || guardoPendiente.current) return;
-    const pendiente = window.localStorage.getItem(CLAVE_PENDIENTE);
-    if (!pendiente) return;
-    guardoPendiente.current = true;
-    window.localStorage.removeItem(CLAVE_PENDIENTE);
-    if (ids.has(pendiente)) return;
-    queueMicrotask(() => {
-      setIds((prev) => new Set(prev).add(pendiente));
-      persistir(pendiente, "guardar").catch(() => {
-        setIds((prev) => {
-          const revertido = new Set(prev);
-          revertido.delete(pendiente);
-          return revertido;
-        });
-        setErrorToast({ productoId: pendiente, accion: "guardar" });
-      });
-    });
-  }, [haySesion, cargado, ids, persistir]);
 
   const valor = useMemo<ContextoFavoritos>(
     () => ({
