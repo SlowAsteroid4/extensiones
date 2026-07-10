@@ -98,7 +98,8 @@ describe("POST /api/pedidos (H04/H05)", () => {
     const pedido = await crearPedidoPorRuta(2);
     expect(pedido.folio).toMatch(/^LS-[A-HJ-NP-Z2-9]{6}$/);
     expect(pedido).toMatchObject({ total_mxn: 398000, estado: "pendiente" });
-    expect(pedido.init_point).toContain("fake");
+    // Delta autorizado (encargo 10): init_point fake → confirmación local.
+    expect(pedido.init_point).toContain(`/pedido/${pedido.folio}?pago=simulado`);
   });
 
   it("cantidad > stock → 409 con detalle por item", async () => {

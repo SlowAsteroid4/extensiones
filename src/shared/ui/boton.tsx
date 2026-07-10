@@ -15,11 +15,11 @@ const TAMANOS = {
 
 const PIELES: Record<string, string> = {
   primary:
-    "bg-btn-primary text-white hover:bg-btn-primary-hover hover:shadow-button active:bg-btn-primary-pressed disabled:bg-btn-primary-disabled disabled:text-white disabled:shadow-none",
+    "border-transparent bg-btn-primary text-white hover:bg-btn-primary-hover hover:shadow-button active:bg-btn-primary-pressed disabled:bg-btn-primary-disabled disabled:text-white disabled:shadow-none",
   secondary:
     "border-outline-border bg-transparent text-outline-text hover:bg-outline-hover-bg active:border-secondary-pressed disabled:border-outline-disabled-border disabled:text-outline-disabled-text disabled:bg-transparent",
   destructive:
-    "bg-error text-white hover:bg-error-hover active:bg-error-pressed disabled:bg-error-border",
+    "border-transparent bg-error text-white hover:bg-error-hover active:bg-error-pressed disabled:bg-error-border",
   whatsapp:
     "border-outline-border bg-transparent text-secundario hover:bg-outline-hover-bg disabled:border-outline-disabled-border disabled:text-outline-disabled-text",
 };
@@ -54,7 +54,7 @@ export function Boton({
   const t = TAMANOS[size];
   const inhabilitado = disabled || loading;
   const clases = [
-    "inline-flex select-none items-center justify-center gap-2 rounded-pill border-2 border-transparent font-bold leading-none",
+    "inline-flex select-none items-center justify-center gap-2 rounded-pill border-2 font-bold leading-none",
     "transition-[background,border-color,transform,box-shadow] duration-[120ms] ease-standard",
     inhabilitado ? "cursor-not-allowed" : "cursor-pointer active:scale-[0.97]",
     t.pad,

@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "setup": "prisma migrate dev && prisma db seed",
+    "simular-pago": "tsx scripts/simular-pago.ts",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "postinstall": "prisma generate"
