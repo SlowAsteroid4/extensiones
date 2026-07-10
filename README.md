@@ -3,9 +3,9 @@
 Tienda en línea de extensiones de cabello 100% natural. Next.js (App Router) +
 TypeScript + Tailwind CSS + PostgreSQL + Prisma.
 
-## Levantar en 3 pasos
+## Correr todo en localhost
 
-Requisitos: Node 24+, Docker.
+Requisitos: Node 24+, Docker (con el daemon corriendo).
 
 ```bash
 # 1. Variables de entorno (valores de desarrollo listos para usar)
@@ -19,7 +19,35 @@ npm run setup && npm run dev
 ```
 
 La tienda queda en http://localhost:3000. El seed crea 72 productos en 5
-familias de tono, 6 testimonios y una cuenta admin (credenciales en tu `.env`).
+familias de tono, 6 testimonios y una cuenta admin.
+
+### Cuenta admin del seed
+
+El panel vive en http://localhost:3000/admin. Entra por
+http://localhost:3000/login con las credenciales de tu `.env`
+(valores de desarrollo por defecto):
+
+- Correo: `admin@extensiones.local` (`SEED_ADMIN_EMAIL`)
+- Contraseña: `admin-dev-cambiame-1234` (`SEED_ADMIN_PASSWORD`)
+
+Una cuenta de clienta se crea desde http://localhost:3000/registro.
+
+### Cómo simular un pago (sin credenciales de MercadoPago)
+
+Con `PASARELA_PROVIDER=fake` (el default de `.env.example`), el checkout
+redirige a la confirmación local `/pedido/{folio}?pago=simulado` con el pedido
+**pendiente**. Para aprobarlo (o rechazarlo) se dispara un webhook sintético
+firmado con el secreto fixture:
+
+```bash
+# compra algo en la tienda y toma el folio de la confirmación (LS-XXXXXX)
+npm run simular-pago -- LS-XXXXXX               # pendiente → pagado_sandbox
+npm run simular-pago -- LS-XXXXXX --rechazado   # pendiente → rechazado
+```
+
+Recarga la confirmación: el estado cambia, el stock se decrementa (solo al
+pagar) y el carrito se limpia únicamente en pago exitoso. El WhatsApp del
+layout usa `NEXT_PUBLIC_WHATSAPP_NUMERO` (si falta, el botón se oculta).
 
 ## Estructura
 
@@ -40,7 +68,8 @@ prisma/           # schema, migraciones, seed
 | Comando | Qué hace |
 |---|---|
 | `npm run dev` | servidor de desarrollo |
-| `npm test` | unit + integración (Vitest; necesita el Postgres de Docker — crea y seedea `extensiones_test`) |
+| `npm run simular-pago -- LS-XXXXXX` | aprueba un pedido en localhost (webhook firmado; `--rechazado` para rechazarlo) |
+| `npm test` | unit + integración + component tests (Vitest; necesita el Postgres de Docker — crea y seedea `extensiones_test`) |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | TypeScript sin emitir |
 | `npm run db:migrate` | migraciones Prisma |
