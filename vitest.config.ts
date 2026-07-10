@@ -7,6 +7,9 @@ export default defineConfig({
     include: ["src/**/*.test.ts", "prisma/**/*.test.ts"],
     globalSetup: ["./vitest.global-setup.ts"],
     setupFiles: ["./vitest.setup.ts"],
+    // Los archivos de integración comparten la DB de test y algunos crean datos
+    // temporales (productos/pedidos); en serie no se pisan entre sí.
+    fileParallelism: false,
   },
   resolve: {
     alias: {
