@@ -1,14 +1,17 @@
 @import "tailwindcss";
 
 /*
- * Tokens de la dirección "Magenta audaz" (encargo T3) — Tailwind v4: los tokens
- * viven en @theme y generan las utilidades (bg-primario, text-h1, etc.).
+ * Tokens de la dirección "Magenta audaz".
+ * Base cerrada (encargo T3) + tokens derivados importados del design system
+ * oficial (claude_design · _ds/…/tokens/*.css, encargo 05) en T6.
+ * Los nombres derivados conservan el nombre del token del DS para poder
+ * auditar 1:1 contra los archivos de diseño.
  *
  * REGLA DE DISEÑO: el magenta (primario/secundario) JAMÁS en texto de cuerpo
- * pequeño — solo en acentos, botones, precios y titulares.
+ * pequeño — solo en elementos ≥16px con peso ≥700 (precio, display, fills).
  */
 @theme {
-  /* Colores */
+  /* ---- Colores · base cerrada (T3, intocable) ---- */
   --color-fondo: #ffffff;
   --color-primario: #ff0891;
   --color-secundario: #c6006e;
@@ -16,7 +19,56 @@
   --color-texto: #2b1620;
   --color-superficie: #fce0ef;
 
-  /* Fuente */
+  /* ---- Colores · estados del magenta héroe (fills no-texto) ---- */
+  --color-primary-hover: #e10680;
+  --color-primary-pressed: #c6006e;
+  --color-primary-disabled: #f7b9d8;
+
+  /* ---- Botón primario sólido (texto blanco AA sobre #C6006E) ---- */
+  --color-btn-primary: #c6006e;
+  --color-btn-primary-hover: #ad0060;
+  --color-btn-primary-pressed: #93004f;
+  --color-btn-primary-disabled: #ebb6d2;
+
+  /* ---- Secundario / outline ---- */
+  --color-secondary-hover: #ad0060;
+  --color-secondary-pressed: #93004f;
+  --color-outline-border: #ff0891;
+  --color-outline-text: #c6006e;
+  --color-outline-hover-bg: #fff0f8;
+  --color-outline-disabled-border: #f3c2dc;
+  --color-outline-disabled-text: #d69bb8;
+
+  /* ---- Jerarquía de texto ---- */
+  --color-text-strong: #2b1620;
+  --color-text-muted: #7a5e6b;
+  --color-text-subtle: #9c8590;
+  --color-text-disabled: #c4b2bb;
+
+  /* ---- Superficies y bordes ---- */
+  --color-surface-strong: #fbd0e6;
+  --color-surface-muted: #fff4fa;
+  --color-border: #f1d3e2;
+  --color-border-strong: #e7bbd2;
+  --color-border-focus: #ff0891;
+
+  /* ---- Semánticos ---- */
+  --color-error: #c11439;
+  --color-error-hover: #a20f30;
+  --color-error-pressed: #880b28;
+  --color-error-surface: #fce8ec;
+  --color-error-border: #f1b6c1;
+  --color-success: #0e7a45;
+  --color-success-surface: #e5f5ec;
+  --color-success-border: #aee0c3;
+
+  /* ---- Overlay, focus, skeleton ---- */
+  --color-overlay: rgb(43 22 32 / 0.55);
+  --color-focus-ring: rgb(255 8 145 / 0.38);
+  --color-skeleton-base: #f5deea;
+  --color-skeleton-shine: #fceff6;
+
+  /* ---- Fuente ---- */
   --font-sans: var(--font-poppins), "Poppins", ui-sans-serif, system-ui, sans-serif;
 
   /* Escala tipográfica: H1 40/800 · H2 18/800 · cuerpo 13–14/500 · precio 16/800 */
@@ -26,6 +78,9 @@
   --text-h2: 1.125rem; /* 18px */
   --text-h2--font-weight: 800;
   --text-h2--line-height: 1.3;
+  --text-h3: 1rem; /* 16px (derivado del DS) */
+  --text-h3--font-weight: 700;
+  --text-h3--line-height: 1.375;
   --text-cuerpo: 0.875rem; /* 14px */
   --text-cuerpo--font-weight: 500;
   --text-cuerpo--line-height: 1.6;
@@ -35,6 +90,95 @@
   --text-precio: 1rem; /* 16px */
   --text-precio--font-weight: 800;
   --text-precio--line-height: 1.3;
+  --text-eyebrow: 0.75rem; /* 12px/700, tracking 0.08em, uppercase */
+  --text-eyebrow--font-weight: 700;
+  --text-eyebrow--line-height: 1.333;
+  --text-eyebrow--letter-spacing: 0.08em;
+  --text-caption: 0.6875rem; /* 11px */
+  --text-caption--font-weight: 500;
+  --text-caption--line-height: 1.36;
+
+  /* ---- Radios (familia redondeada del DS) ---- */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 14px; /* inputs, botones rectos */
+  --radius-lg: 18px; /* badges grandes, sheets internos */
+  --radius-xl: 20px; /* card de producto */
+  --radius-2xl: 28px; /* header, bottom sheet, modal */
+  --radius-pill: 999px; /* chips, botones pill */
+
+  /* ---- Sombras (tinte rosa/ciruela, cero glassmorphism) ---- */
+  --shadow-sm: 0 1px 2px rgb(43 22 32 / 0.06);
+  --shadow-card: 0 4px 16px rgb(198 0 110 / 0.08);
+  --shadow-card-hover: 0 10px 28px rgb(198 0 110 / 0.16);
+  --shadow-button: 0 4px 12px rgb(255 8 145 / 0.3);
+  --shadow-popover: 0 8px 24px rgb(43 22 32 / 0.14);
+  --shadow-toast: 0 8px 28px rgb(43 22 32 / 0.18);
+  --shadow-modal: 0 16px 48px rgb(43 22 32 / 0.24);
+  --shadow-sheet: 0 -8px 32px rgb(43 22 32 / 0.16);
+  --shadow-focus: 0 0 0 3px rgb(255 8 145 / 0.38);
+
+  /* ---- Motion ---- */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Breakpoint sm del DS: 480px (md/lg/xl coinciden con los default 768/1024/1280) */
+  --breakpoint-sm: 480px;
+
+  /* ---- Animaciones del sistema ---- */
+  --animate-ls-spin: ls-spin 0.7s linear infinite;
+  --animate-ls-pulse: ls-pulse 1400ms var(--ease-standard) infinite;
+  --animate-ls-toast-in: ls-toast-in 240ms var(--ease-decelerate);
+  --animate-ls-modal-in: ls-modal-in 320ms var(--ease-decelerate);
+  --animate-ls-heart-pop: ls-heart-pop 200ms var(--ease-spring);
+
+  @keyframes ls-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes ls-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+  @keyframes ls-toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes ls-modal-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+  @keyframes ls-heart-pop {
+    0% {
+      transform: scale(1);
+    }
+    40% {
+      transform: scale(1.28);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
 }
 
 body {
@@ -44,4 +188,20 @@ body {
   font-size: var(--text-cuerpo);
   font-weight: 500;
   line-height: 1.6;
+}
+
+/* Patrón de marca cuando falta foto: rayas diagonales rosas (DS · readme). */
+.foto-placeholder {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-superficie) 0 10px,
+    var(--color-surface-strong) 10px 20px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
