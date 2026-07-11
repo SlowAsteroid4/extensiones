@@ -29,6 +29,7 @@ export type NombreIcono =
   | "refresh"
   | "user"
   | "image"
+  | "menu"
   | "whatsapp";
 
 const PATHS: Record<Exclude<NombreIcono, "whatsapp">, ReactNode> = {
@@ -156,6 +157,13 @@ const PATHS: Record<Exclude<NombreIcono, "whatsapp">, ReactNode> = {
       <rect x="3" y="3" width="18" height="18" rx="3" />
       <circle cx="8.5" cy="8.5" r="1.8" />
       <path d="m21 16-5-5L5 21" />
+    </>
+  ),
+  menu: (
+    <>
+      <path d="M4 6h16" />
+      <path d="M4 12h16" />
+      <path d="M4 18h16" />
     </>
   ),
 };

@@ -19,7 +19,7 @@ export default async function LayoutAdmin({ children }: { children: ReactNode })
             title="No tienes acceso al panel"
             message="Requiere rol de administradora."
             actionLabel="Volver a la tienda"
-            actionHref="/"
+            actionHref="/catalogo"
           />
         </div>
       </div>

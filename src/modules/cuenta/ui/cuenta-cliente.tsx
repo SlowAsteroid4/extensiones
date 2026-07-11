@@ -49,7 +49,7 @@ export function CuentaCliente({ nombre, email }: { nombre: string; email: string
     setCerrando(true);
     try {
       await signOut({ redirect: false });
-      router.push("/");
+      router.push("/catalogo");
       router.refresh();
     } catch {
       setErrorCierre(true);
@@ -64,7 +64,7 @@ export function CuentaCliente({ nombre, email }: { nombre: string; email: string
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <BarraSuperior title="Mi cuenta" cartCount={totalPiezas} backHref="/" />
+      <BarraSuperior title="Mi cuenta" cartCount={totalPiezas} backHref="/catalogo" />
       <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col gap-4 p-4">
         <div className="flex items-center gap-3.5 py-1">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-superficie">

@@ -88,14 +88,14 @@ export function CarritoPagina() {
   if (!listo) {
     return (
       <div className="flex min-h-dvh flex-col">
-        <BarraSuperior title="Tu carrito" cartCount={0} backHref="/" />
+        <BarraSuperior title="Tu carrito" cartCount={0} backHref="/catalogo" />
       </div>
     );
   }
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <BarraSuperior title="Tu carrito" cartCount={totalPiezas} backHref="/" />
+      <BarraSuperior title="Tu carrito" cartCount={totalPiezas} backHref="/catalogo" />
       {items.length === 0 ? (
         <div className="flex flex-1 items-center p-4">
           <EstadoVacio
@@ -103,7 +103,7 @@ export function CarritoPagina() {
             title="Tu carrito está vacío"
             message="Explora nuestros tonos y agrega tus favoritos para empezar."
             actionLabel="Explorar el catálogo"
-            actionHref="/"
+            actionHref="/catalogo"
           />
         </div>
       ) : (

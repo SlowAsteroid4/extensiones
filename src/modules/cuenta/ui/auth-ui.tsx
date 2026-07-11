@@ -20,7 +20,7 @@ export function MarcoAuth({ children }: { children: ReactNode }) {
   const { totalPiezas } = useCarrito();
   return (
     <div className="flex min-h-dvh flex-col">
-      <BarraSuperior title="" cartCount={totalPiezas} backHref="/" />
+      <BarraSuperior title="" cartCount={totalPiezas} backHref="/catalogo" />
       <div className="mx-auto flex w-full max-w-[430px] flex-1 flex-col gap-[18px] p-5">{children}</div>
     </div>
   );

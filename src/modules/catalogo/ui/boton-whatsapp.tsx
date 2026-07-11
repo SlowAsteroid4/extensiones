@@ -17,11 +17,13 @@ export function BotonWhatsApp({
   mensaje,
   etiqueta = "¿Dudas de tono? Escríbenos",
   size = "md",
+  fullWidth = true,
 }: {
   /** texto prellenado del chat */
   mensaje?: string;
   etiqueta?: string;
-  size?: "md" | "lg";
+  size?: "sm" | "md" | "lg";
+  fullWidth?: boolean;
 }) {
   const [toastVisible, setToastVisible] = useState(false);
   const [copiado, setCopiado] = useState(false);
@@ -47,7 +49,7 @@ export function BotonWhatsApp({
 
   return (
     <>
-      <Boton variant="whatsapp" size={size} fullWidth onClick={abrir}>
+      <Boton variant="whatsapp" size={size} fullWidth={fullWidth} onClick={abrir}>
         {etiqueta}
       </Boton>
       {toastVisible && (
