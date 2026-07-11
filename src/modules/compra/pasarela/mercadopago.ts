@@ -45,11 +45,13 @@ export function crearProveedorMercadoPago(): PasarelaProvider {
           })),
           payer: { email: email_comprador },
           notification_url: `${appUrl}/api/webhooks/mercadopago`,
+          // Delta autorizado (encargo 10): back_urls apuntan a las rutas
+          // REALES de confirmación del flujo B — éxito/pendiente a la
+          // confirmación (B4) y rechazo a su pantalla de retorno (B3).
           back_urls: {
-            // Rutas placeholder: la UI de confirmación llega en T6.
             success: `${appUrl}/pedido/${folio}`,
             pending: `${appUrl}/pedido/${folio}`,
-            failure: `${appUrl}/pedido/${folio}`,
+            failure: `${appUrl}/pedido/${folio}/rechazado`,
           },
         },
       });

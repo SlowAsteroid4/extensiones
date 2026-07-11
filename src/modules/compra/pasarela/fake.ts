@@ -11,9 +11,14 @@ export const proveedorFake: PasarelaProvider = {
   nombre: "fake",
 
   async crearPreferencia({ folio }): Promise<PreferenciaCreada> {
+    // Delta autorizado (encargo 10): el init_point apunta a la confirmación
+    // local para que el flujo de compra no muera en un dominio falso. La UI
+    // SIEMPRE redirige a init_point: cuando entre el provider real de
+    // MercadoPago devolverá su init_point real y la UI no cambia.
+    const appUrl = process.env.APP_URL ?? "http://localhost:3000";
     return {
       pasarela_ref: `fake-pref-${folio}`,
-      init_point: `https://sandbox.pasarela-fake.local/checkout?pref=fake-pref-${folio}`,
+      init_point: `${appUrl}/pedido/${folio}?pago=simulado`,
     };
   },
 

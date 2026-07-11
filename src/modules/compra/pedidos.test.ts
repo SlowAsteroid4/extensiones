@@ -93,7 +93,9 @@ describe("crearPedido (H04/H05)", () => {
     expect(resultado.pedido.folio).toMatch(PATRON_FOLIO);
     expect(resultado.pedido.total_mxn).toBe(2 * 199000 + 249000); // 647000, calculado en servidor
     expect(resultado.pedido.estado).toBe("pendiente");
-    expect(resultado.pedido.init_point).toContain("fake");
+    // Delta autorizado (encargo 10): el init_point del provider fake apunta
+    // a la confirmación local /pedido/{folio}?pago=simulado.
+    expect(resultado.pedido.init_point).toContain(`/pedido/${resultado.pedido.folio}?pago=simulado`);
 
     const enDb = await prisma.pedido.findUnique({
       where: { folio: resultado.pedido.folio },
