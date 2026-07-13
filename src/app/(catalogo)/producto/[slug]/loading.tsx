@@ -6,7 +6,7 @@ import { BarraSuperior } from "@/shared/ui/producto";
 export default function CargandoFicha() {
   return (
     <div className="flex min-h-dvh flex-col">
-      <BarraSuperior title="" backHref="/" />
+      <BarraSuperior title="" backHref="/catalogo" />
       <div className="p-4">
         <Esqueleto variant="ficha" />
       </div>

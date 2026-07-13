@@ -85,7 +85,7 @@ export function NavAdmin({ activa }: { activa: "productos" | "testimonios" }) {
           {e.etiqueta}
         </NextLink>
       ))}
-      <NextLink href="/" className="ml-auto text-[13px] font-semibold text-outline-text hover:underline">
+      <NextLink href="/catalogo" className="ml-auto text-[13px] font-semibold text-outline-text hover:underline">
         Ver la tienda
       </NextLink>
     </div>

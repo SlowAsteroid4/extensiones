@@ -104,7 +104,7 @@ export function FichaCliente({ producto }: { producto: FichaAPI }) {
     <div className="flex min-h-dvh flex-col">
       {/* Mobile (390): barra superior ligera · Desktop (1280): StoreHeader */}
       <div className="lg:hidden">
-        <BarraSuperior title={producto.nombre_tono} cartCount={totalPiezas} backHref="/" />
+        <BarraSuperior title={producto.nombre_tono} cartCount={totalPiezas} backHref="/catalogo" />
       </div>
       <EncabezadoConCarrito className="hidden lg:block" />
 

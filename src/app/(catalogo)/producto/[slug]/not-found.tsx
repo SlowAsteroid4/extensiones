@@ -8,14 +8,14 @@ export default function ProductoNoDisponible() {
   const { totalPiezas } = useCarrito();
   return (
     <div className="flex min-h-dvh flex-col">
-      <BarraSuperior title="" cartCount={totalPiezas} backHref="/" />
+      <BarraSuperior title="" cartCount={totalPiezas} backHref="/catalogo" />
       <div className="flex flex-1 items-center p-4">
         <EstadoVacio
           icon="alert"
           title="Este producto ya no está disponible"
           message="Puede que lo hayamos retirado o agotado. Explora el resto del catálogo."
           actionLabel="Ver el catálogo"
-          actionHref="/"
+          actionHref="/catalogo"
         />
       </div>
     </div>

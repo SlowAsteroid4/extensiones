@@ -2,8 +2,10 @@ import { Suspense } from "react";
 import { CatalogoCliente } from "@/modules/catalogo/ui/catalogo-cliente";
 import { EncabezadoConCarrito } from "@/modules/catalogo/ui/encabezado-con-carrito";
 
-// A1 · Home / Catálogo (H01, H13, H14): la clienta ve todo sin preguntar.
-export default function Home() {
+// A1 · Catálogo completo (H01, H13, H14): la clienta ve todo sin preguntar.
+// Antes vivía en "/"; movido a /catalogo cuando Inicio.html (landing de
+// marketing) pasó a ser la home real.
+export default function Catalogo() {
   return (
     <>
       <EncabezadoConCarrito />

@@ -318,7 +318,7 @@ export function CatalogoCliente({
           title="Aún no hay productos en esta categoría"
           message="Estamos surtiendo más tonos. Mientras, mira todo lo disponible."
           actionLabel="Ver todo el catálogo"
-          actionHref="/"
+          actionHref="/catalogo"
         />
       )
     ) : null;

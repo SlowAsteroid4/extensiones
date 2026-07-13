@@ -10,7 +10,7 @@ export default function NoEncontrado() {
           title="Esta página no está disponible"
           message="Explora el resto del catálogo."
           actionLabel="Ver el catálogo"
-          actionHref="/"
+          actionHref="/catalogo"
         />
       </div>
     </div>

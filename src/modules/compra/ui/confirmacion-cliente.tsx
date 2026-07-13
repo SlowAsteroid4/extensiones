@@ -49,7 +49,7 @@ export function ConfirmacionCliente({ pedido }: { pedido: PedidoConfirmacion }) 
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <BarraSuperior title="Confirmación" cartCount={pagado ? 0 : totalPiezas} backHref="/" />
+      <BarraSuperior title="Confirmación" cartCount={pagado ? 0 : totalPiezas} backHref="/catalogo" />
       <div className="mx-auto flex w-full max-w-[560px] flex-1 flex-col gap-[18px] p-4">
         <div className="flex flex-col items-center gap-3 pt-2">
           <div

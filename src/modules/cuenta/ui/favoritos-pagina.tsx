@@ -86,7 +86,7 @@ export function FavoritosPagina() {
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <BarraSuperior title="Mis favoritos" cartCount={totalPiezas} backHref="/" />
+      <BarraSuperior title="Mis favoritos" cartCount={totalPiezas} backHref="/catalogo" />
       <div className="mx-auto flex w-full max-w-[1200px] flex-1 flex-col gap-4 p-4">
         {lista === null ? (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 lg:gap-5">
@@ -101,7 +101,7 @@ export function FavoritosPagina() {
               title="Aún no guardas favoritos"
               message="Toca el corazón en cualquier tono para guardarlo aquí y encontrarlo fácil."
               actionLabel="Explorar el catálogo"
-              actionHref="/"
+              actionHref="/catalogo"
             />
           </div>
         ) : (
