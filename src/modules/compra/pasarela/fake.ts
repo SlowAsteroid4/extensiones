@@ -3,6 +3,7 @@
 // Convención de fixture para obtenerPago: el id del pago sintético codifica el
 // resultado y el folio →  fake-pago-aprobado-LS-XXXXXX · fake-pago-rechazado-LS-XXXXXX
 // NUNCA usar en producción: se selecciona con PASARELA_PROVIDER=fake.
+import { urlApp } from "@/shared/config/app-url";
 import type { InfoPago, PasarelaProvider, PreferenciaCreada } from "./provider";
 
 const PATRON_PAGO_FAKE = /^fake-pago-(aprobado|rechazado|otro)-(.+)$/;
@@ -15,7 +16,7 @@ export const proveedorFake: PasarelaProvider = {
     // local para que el flujo de compra no muera en un dominio falso. La UI
     // SIEMPRE redirige a init_point: cuando entre el provider real de
     // MercadoPago devolverá su init_point real y la UI no cambia.
-    const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+    const appUrl = urlApp();
     return {
       pasarela_ref: `fake-pref-${folio}`,
       init_point: `${appUrl}/pedido/${folio}?pago=simulado`,
