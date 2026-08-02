@@ -30,6 +30,9 @@ export type NombreIcono =
   | "user"
   | "image"
   | "menu"
+  | "sun"
+  | "moon"
+  | "monitor"
   | "whatsapp";
 
 const PATHS: Record<Exclude<NombreIcono, "whatsapp">, ReactNode> = {
@@ -164,6 +167,28 @@ const PATHS: Record<Exclude<NombreIcono, "whatsapp">, ReactNode> = {
       <path d="M4 6h16" />
       <path d="M4 12h16" />
       <path d="M4 18h16" />
+    </>
+  ),
+  // Trío del selector de tema: claro · oscuro · seguir al sistema.
+  sun: (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2.5" />
+      <path d="M12 19.5V22" />
+      <path d="M2 12h2.5" />
+      <path d="M19.5 12H22" />
+      <path d="m4.9 4.9 1.8 1.8" />
+      <path d="m17.3 17.3 1.8 1.8" />
+      <path d="m19.1 4.9-1.8 1.8" />
+      <path d="m6.7 17.3-1.8 1.8" />
+    </>
+  ),
+  moon: <path d="M20.5 14.3A8.6 8.6 0 0 1 9.7 3.5a8.6 8.6 0 1 0 10.8 10.8Z" />,
+  monitor: (
+    <>
+      <rect x="2.5" y="3.5" width="19" height="13" rx="2.5" />
+      <path d="M8.5 20.5h7" />
+      <path d="M12 16.5v4" />
     </>
   ),
 };

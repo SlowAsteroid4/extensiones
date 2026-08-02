@@ -1,6 +1,7 @@
 "use client";
 // Providers de cliente: sesión (Auth.js) + carrito + favoritos, y los
 // overlays globales que dependen de ellos (modal C5 y toast de favoritos).
+// El tema NO va aquí: useTema lee un store de módulo y no necesita provider.
 import type { ReactNode } from "react";
 import { SessionProvider } from "next-auth/react";
 import { ProveedorCarrito } from "@/modules/compra/ui/carrito-contexto";

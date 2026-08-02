@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import NextLink from "next/link";
 import { Boton } from "@/shared/ui/boton";
+import { SelectorTema } from "@/shared/ui/selector-tema";
 
 export interface VarianteAdmin {
   id: string;
@@ -88,6 +89,7 @@ export function NavAdmin({ activa }: { activa: "productos" | "testimonios" }) {
       <NextLink href="/catalogo" className="ml-auto text-[13px] font-semibold text-outline-text hover:underline">
         Ver la tienda
       </NextLink>
+      <SelectorTema size={32} />
     </div>
   );
 }
