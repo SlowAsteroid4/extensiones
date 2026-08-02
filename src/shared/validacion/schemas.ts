@@ -2,6 +2,10 @@
 // Regla de seguridad: sin HTML libre en textos — se rechaza cualquier etiqueta.
 import { z } from "zod";
 import { FAMILIAS_TONO, LARGOS_DISPONIBLES } from "./familias";
+import { MENSAJE_EMAIL, MENSAJE_EMAIL_LARGO, normalizarEmail, revisarEmail } from "./email";
+import { evaluarPassword, MENSAJE_PASSWORD_CORTA } from "./password";
+
+export { MENSAJE_EMAIL };
 
 const sinHtml = (campo: string) =>
   z
@@ -77,17 +81,42 @@ export const testimonioSchema = z.object({
 
 // ── T4 · API fase 1 ──────────────────────────────────────────────────────────
 
-// H07: el mensaje dice el requisito exacto (política cerrada: mínimo 8).
-export const MENSAJE_PASSWORD = "La contraseña debe tener al menos 8 caracteres";
-export const MENSAJE_EMAIL = "El correo no tiene un formato válido";
+// Campo trampa del alta (anti-bot): invisible para una persona, lo rellena el
+// bot que completa todos los inputs. Vive aquí —módulo puro— para que el
+// formulario y el servidor usen el MISMO nombre sin arrastrar prisma al cliente.
+export const CAMPO_TRAMPA = "sitio_web";
 
-export const registroSchema = z.object({
-  email: z.email(MENSAJE_EMAIL).max(254).transform((v) => v.toLowerCase()),
-  password: z.string().min(8, MENSAJE_PASSWORD).max(200),
-  // La entidad Cuenta exige nombre; en el registro es opcional (si falta se usa
-  // la parte local del email — decisión reportada en el handoff T4).
-  nombre: sinHtml("nombre").pipe(z.string().max(120)).optional(),
-});
+// H07: el mensaje dice el requisito exacto. La política vive en
+// `./password` y `./email` (OWASP ASVS §2.1 y §5.1) — aquí solo se conecta a
+// zod para que la MISMA regla valga en el cliente y en el servidor.
+export const registroSchema = z
+  .object({
+    email: z.string({ error: MENSAJE_EMAIL }).max(320, MENSAJE_EMAIL_LARGO),
+    password: z.string({ error: MENSAJE_PASSWORD_CORTA }),
+    // La entidad Cuenta exige nombre; en el registro es opcional (si falta se usa
+    // la parte local del email — decisión reportada en el handoff T4). El campo
+    // vacío se trata como ausente para no castigar a quien lo deja en blanco.
+    nombre: z.preprocess(
+      (valor) => (typeof valor === "string" && valor.trim() === "" ? undefined : valor),
+      sinHtml("nombre").pipe(z.string().max(120)).optional()
+    ),
+  })
+  .superRefine((datos, ctx) => {
+    const email = revisarEmail(datos.email);
+    if (!email.ok) {
+      ctx.addIssue({ code: "custom", path: ["email"], message: email.motivo });
+    }
+    // El correo y el nombre entran como contexto: una contraseña que los repite
+    // no es secreta para nadie que lea la ficha de la clienta.
+    const password = evaluarPassword(datos.password, {
+      email: email.ok ? email.email : "",
+      nombre: datos.nombre,
+    });
+    if (!password.valida && password.motivo) {
+      ctx.addIssue({ code: "custom", path: ["password"], message: password.motivo });
+    }
+  })
+  .transform((datos) => ({ ...datos, email: normalizarEmail(datos.email) }));
 
 // H08: para authorize de Auth.js — solo forma, sin política (el error es genérico).
 export const credencialesSchema = z.object({

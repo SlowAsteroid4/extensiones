@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import { Providers } from "./providers";
+import { ScriptTema } from "@/shared/tema/script-tema";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -16,14 +17,27 @@ export const metadata: Metadata = {
   description: "Tienda de extensiones de cabello 100% natural.",
 };
 
+// Barra del navegador móvil a juego con --color-fondo-pagina de cada tema.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f070c" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" className={`${poppins.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-fondo text-texto font-sans">
+    // suppressHydrationWarning: ScriptTema escribe data-tema en el <html>
+    // antes de hidratar, así que el atributo no coincide con el del servidor.
+    <html lang="es" className={`${poppins.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <ScriptTema />
+      </head>
+      <body className="min-h-full flex flex-col bg-fondo-pagina text-texto font-sans">
         <Providers>{children}</Providers>
       </body>
     </html>

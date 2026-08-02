@@ -8,6 +8,7 @@ import { useState } from "react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { Icono } from "@/shared/ui/icono";
+import { SelectorTema } from "@/shared/ui/selector-tema";
 import { BotonWhatsApp } from "@/modules/catalogo/ui/boton-whatsapp";
 import { useCarrito } from "@/modules/compra/ui/carrito-contexto";
 
@@ -56,6 +57,11 @@ export function EncabezadoSitio() {
           <div className="hidden shrink-0 lg:block">
             <BotonWhatsApp etiqueta="¿Dudas de tono?" size="sm" fullWidth={false} />
           </div>
+          {/* Bajo sm no cabe junto a cuenta + carrito + hamburguesa: ahí vive
+              dentro del menú desplegable. */}
+          <div className="hidden shrink-0 sm:block">
+            <SelectorTema />
+          </div>
           <NextLink
             href="/cuenta"
             aria-label="Mi cuenta"
@@ -70,7 +76,7 @@ export function EncabezadoSitio() {
           >
             <Icono name="cart" size={20} />
             {totalPiezas > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-pill border-2 border-fondo bg-text-strong px-[5px] text-[11px] font-bold leading-none text-white">
+              <span className="absolute -right-0.5 -top-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-pill border-2 border-fondo bg-inverso px-[5px] text-[11px] font-bold leading-none text-sobre-inverso">
                 {totalPiezas}
               </span>
             )}
@@ -101,6 +107,10 @@ export function EncabezadoSitio() {
               {enlace.label}
             </NextLink>
           ))}
+          <div className="mt-1 flex items-center justify-between rounded-md px-3.5 py-1.5 sm:hidden">
+            <span className="text-[15px] font-semibold text-text-strong">Tema</span>
+            <SelectorTema />
+          </div>
           <div className="mt-2">
             <BotonWhatsApp etiqueta="¿Dudas de tono? Escríbenos" size="lg" />
           </div>
@@ -113,7 +123,7 @@ export function EncabezadoSitio() {
 /* ── Footer de sitio — marca + accesos + copyright. ── */
 export function PieSitio() {
   return (
-    <footer className="bg-texto text-white">
+    <footer className="bg-pie text-white">
       <div className="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-8 px-4 py-10 lg:grid-cols-[1.4fr_1fr_1fr] lg:px-6">
         <div className="flex flex-col gap-2.5">
           <span className="text-[18px] font-extrabold text-white">Lizzy &amp; Stephy</span>

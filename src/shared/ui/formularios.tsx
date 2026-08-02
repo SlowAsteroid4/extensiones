@@ -2,7 +2,7 @@
 // Formularios del DS "Magenta audaz": Input, FormField, Chip, Toggle,
 // QuantityStepper, VariantSelector, EditableVariantRow, ImageUploader.
 // Regla vinculante: errores INLINE bajo el campo, sin perder lo capturado.
-import { useState, type InputHTMLAttributes, type ReactNode } from "react";
+import { useState, type InputHTMLAttributes, type ReactNode, type Ref } from "react";
 import { BotonIcono } from "./boton";
 import { Icono, type NombreIcono } from "./icono";
 import { Label } from "./datos";
@@ -17,6 +17,9 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   prefix?: string;
   icon?: NombreIcono;
   contenedorClassName?: string;
+  // React 19: `ref` es un prop normal — el formulario de alta lo usa para
+  // devolver el foco al campo que falló.
+  ref?: Ref<HTMLInputElement>;
 }
 
 export function Input({
@@ -28,6 +31,7 @@ export function Input({
   icon,
   disabled = false,
   id,
+  ref,
   contenedorClassName = "",
   className = "",
   ...rest
@@ -51,6 +55,7 @@ export function Input({
         {prefix && <span className="text-[14px] font-semibold text-text-muted">{prefix}</span>}
         <input
           id={id}
+          ref={ref}
           type={tipoEfectivo}
           disabled={disabled}
           className={[
@@ -315,7 +320,7 @@ export function SelectorVariantes({
               </span>
             )}
             {agotada && (
-              <span className="absolute -top-2 -right-1.5 rounded-pill bg-secundario px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.04em] text-white">
+              <span className="absolute -top-2 -right-1.5 rounded-pill bg-btn-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.04em] text-white">
                 Agotado
               </span>
             )}
@@ -414,7 +419,7 @@ export function SubidorImagen({
                   onRemove?.(indice);
                 }}
                 aria-label={`Quitar imagen ${indice + 1}`}
-                className="absolute right-1 top-1 inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-none bg-text-strong text-white"
+                className="absolute right-1 top-1 inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-none bg-inverso text-sobre-inverso"
               >
                 <Icono name="close" size={14} />
               </button>

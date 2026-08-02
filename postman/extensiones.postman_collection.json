@@ -344,14 +344,15 @@
           }
         },
         {
-          "name": "Registro — unhappy: contraseña <8 (400 con requisito exacto)",
+          "name": "Registro — unhappy: contraseña corta (400 con requisito exacto)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
                   "pm.test(\"400\", () => pm.response.to.have.status(400));",
-                  "pm.test(\"mensaje exacto\", () => pm.expect(pm.response.json().error).to.eql('La contraseña debe tener al menos 8 caracteres'));"
+                  "pm.test(\"mensaje exacto\", () => pm.expect(pm.response.json().error).to.eql('La contraseña debe tener al menos 12 caracteres'));",
+                  "pm.test(\"señala el campo\", () => pm.expect(pm.response.json().campo).to.eql('password'));"
                 ]
               }
             }
@@ -366,7 +367,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"otra@example.com\",\n  \"password\": \"1234567\"\n}"
+              "raw": "{\n  \"email\": \"otra@example.com\",\n  \"password\": \"Corta-12\"\n}"
             },
             "url": "{{baseUrl}}/api/cuenta/registro"
           }
@@ -394,9 +395,150 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"no-es-email\",\n  \"password\": \"12345678\"\n}"
+              "raw": "{\n  \"email\": \"no-es-email\",\n  \"password\": \"{{passwordPrueba}}\"\n}"
             },
             "url": "{{baseUrl}}/api/cuenta/registro"
+          }
+        },
+        {
+          "name": "Registro — unhappy: contraseña con datos del correo (400, OSINT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"explica el porqué\", () => pm.expect(pm.response.json().error).to.include('no puede contener tu correo'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana.torres@example.com\",\n  \"password\": \"AnaTorres2026!\"\n}"
+            },
+            "url": "{{baseUrl}}/api/cuenta/registro"
+          }
+        },
+        {
+          "name": "Registro — unhappy: correo desechable (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"pide correo permanente\", () => pm.expect(pm.response.json().error).to.include('temporal'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ana@mailinator.com\",\n  \"password\": \"{{passwordPrueba}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/cuenta/registro"
+          }
+        },
+        {
+          "name": "Registro — unhappy: campo trampa relleno (400, anti-bot)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"error genérico, sin pistas\", () => pm.expect(pm.response.json().error).to.not.include('trampa'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bot@example.com\",\n  \"password\": \"{{passwordPrueba}}\",\n  \"sitio_web\": \"https://spam.example\"\n}"
+            },
+            "url": "{{baseUrl}}/api/cuenta/registro"
+          }
+        },
+        {
+          "name": "Correo disponible — happy (200; false si ya se corrió el registro)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"solo el booleano\", () => pm.expect(Object.keys(pm.response.json())).to.eql([\"disponible\"]));",
+                  "pm.test(\"sin caché\", () => pm.expect(pm.response.headers.get('Cache-Control')).to.eql('no-store'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailPrueba}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/cuenta/email-disponible"
+          }
+        },
+        {
+          "name": "Correo disponible — unhappy: correo inválido (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"mensaje claro\", () => pm.expect(pm.response.json().error).to.eql('El correo no tiene un formato válido'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"no-es-email\"\n}"
+            },
+            "url": "{{baseUrl}}/api/cuenta/email-disponible"
           }
         },
         {
