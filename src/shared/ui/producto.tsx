@@ -3,6 +3,7 @@
 // CartRow, TotalsSummary, FilterGroup, ToneSearch.
 // Reglas vinculantes: "Agotado" siempre visible · empty/errores con salida ·
 // precios MXN en centavos (formatearPrecioMXN).
+import { useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import NextLink from "next/link";
 import { formatearPrecioMXN } from "@/shared/precio/formatear";
@@ -434,7 +435,8 @@ export function GaleriaProducto({
   fotos?: string[];
   soldOut?: boolean;
 }) {
-  const principal = fotos[0];
+  const [seleccionada, setSeleccionada] = useState(0);
+  const principal = fotos[seleccionada] ?? fotos[0];
   return (
     <div className="flex flex-col gap-2.5">
       <div
@@ -457,11 +459,17 @@ export function GaleriaProducto({
       </div>
       <div className="flex gap-2">
         {Array.from({ length: Math.max(fotos.length, 4) }).map((_, i) => (
-          <div
+          <button
             key={i}
+            type="button"
+            disabled={!fotos[i]}
+            aria-label={`Ver foto ${i + 1}`}
+            aria-current={i === seleccionada}
+            onClick={() => setSeleccionada(i)}
             className={[
-              "foto-placeholder h-15 w-15 shrink-0 rounded-md border-2",
-              i === 0 ? "border-primario" : "border-border",
+              "foto-placeholder h-15 w-15 shrink-0 rounded-md border-2 p-0",
+              fotos[i] ? "cursor-pointer" : "cursor-default",
+              i === seleccionada ? "border-primario" : "border-border",
             ].join(" ")}
             style={fondoFoto(fotos[i])}
           />

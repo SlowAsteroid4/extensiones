@@ -379,23 +379,49 @@ export function FilaVarianteEditable({
 /* ── ImageUploader — vacío · preview · error con requisitos exactos. ── */
 
 export function SubidorImagen({
-  preview,
+  previews = [],
   error = false,
   errorText,
   hint = "PNG o JPG · máx 5 MB · mín 800×800",
   onSelect,
   onRemove,
 }: {
-  preview?: string;
+  previews?: string[];
   error?: boolean;
   errorText?: string;
   hint?: string;
-  onSelect?: (archivo: File | null) => void;
-  onRemove?: () => void;
+  onSelect?: (archivos: File[]) => void;
+  onRemove?: (indice: number) => void;
 }) {
   const [arrastrando, setArrastrando] = useState(false);
   return (
     <div className="w-full">
+      {previews.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-2">
+          {previews.map((preview, indice) => (
+            <div key={indice} className="relative">
+              {/* Vista previa local (data-URL) — <img> a propósito */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={preview}
+                alt={`Vista previa ${indice + 1}`}
+                className="h-24 w-24 rounded-md border border-border-strong object-cover"
+              />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onRemove?.(indice);
+                }}
+                aria-label={`Quitar imagen ${indice + 1}`}
+                className="absolute right-1 top-1 inline-flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-none bg-text-strong text-white"
+              >
+                <Icono name="close" size={14} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
       <label
         onDragOver={(e) => {
           e.preventDefault();
@@ -405,52 +431,33 @@ export function SubidorImagen({
         onDrop={(e) => {
           e.preventDefault();
           setArrastrando(false);
-          onSelect?.(e.dataTransfer.files?.[0] ?? null);
+          onSelect?.(Array.from(e.dataTransfer.files ?? []));
         }}
         className={[
-          "relative flex min-h-[168px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-5 text-center",
+          "relative flex min-h-[100px] cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-5 text-center",
           "transition-[border-color,background] duration-[120ms] ease-standard",
           error
             ? "border-error bg-error-surface"
             : arrastrando
               ? "border-primario bg-superficie"
-              : preview
-                ? "border-border-strong bg-fondo"
-                : "border-border-strong bg-surface-muted",
+              : "border-border-strong bg-surface-muted",
         ].join(" ")}
       >
         <input
           type="file"
           accept="image/png,image/jpeg"
+          multiple
           className="sr-only"
-          onChange={(e) => onSelect?.(e.target.files?.[0] ?? null)}
+          onChange={(e) => {
+            onSelect?.(Array.from(e.target.files ?? []));
+            e.target.value = "";
+          }}
         />
-        {preview ? (
-          <>
-            {/* Vista previa local (object URL) — <img> a propósito */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={preview} alt="Vista previa" className="max-h-32 max-w-full rounded-md object-cover" />
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                onRemove?.();
-              }}
-              aria-label="Quitar imagen"
-              className="absolute right-2 top-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-text-strong text-white"
-            >
-              <Icono name="close" size={16} />
-            </button>
-          </>
-        ) : (
-          <>
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-surface-strong text-secundario">
-              <Icono name="upload" size={22} />
-            </span>
-            <span className="text-[14px] font-semibold text-text-strong">Arrastra o toca para subir</span>
-            <span className="text-[12px] font-medium text-text-muted">{hint}</span>
-          </>
-        )}
+        <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-surface-strong text-secundario">
+          <Icono name="upload" size={22} />
+        </span>
+        <span className="text-[14px] font-semibold text-text-strong">Arrastra o toca para subir</span>
+        <span className="text-[12px] font-medium text-text-muted">{hint}</span>
       </label>
       {error && errorText && (
         <div className="mt-1.5 flex items-center gap-[5px] text-[13px] font-medium text-error">

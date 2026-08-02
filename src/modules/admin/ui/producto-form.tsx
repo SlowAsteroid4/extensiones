@@ -2,8 +2,8 @@
 // D2 · Crear / editar producto (H15, H16).
 //   · errores inline POR CAMPO con los mensajes de la API (400 → errores[])
 //     y SIN perder lo capturado
-//   · foto vía uploader con requisitos exactos (mín 800×800, máx 5 MB);
-//     se persiste como data-URL reducida dentro de fotos[] (contrato cerrado:
+//   · fotos (hasta 12) vía uploader con requisitos exactos (mín 800×800, máx 5 MB);
+//     se persisten como data-URLs reducidas dentro de fotos[] (contrato cerrado:
 //     strings — no existe endpoint de subida de archivos)
 //   · variantes repetibles (agregar/quitar fila)
 //   · falla de conexión → toast con reintento, cambios conservados
@@ -19,6 +19,7 @@ import { capitalizar } from "@/modules/catalogo/ui/tipos";
 import { BarraAdmin, NavAdmin, type ProductoAdmin } from "./comunes";
 
 const ERROR_FOTO = "La imagen debe ser mín. 800×800 y pesar máx. 5 MB. Sube otra sin perder el formulario.";
+const MAX_FOTOS = 12;
 
 interface FilaVariante {
   clave: string;
@@ -61,7 +62,7 @@ export function ProductoForm({ inicial }: { inicial?: ProductoAdmin }) {
   const [tipo, setTipo] = useState(inicial?.tipo ?? "");
   const [categoriaId, setCategoriaId] = useState(inicial?.categoria.id ?? "");
   const [descripcion, setDescripcion] = useState(inicial?.descripcion ?? "");
-  const [foto, setFoto] = useState<string | undefined>(inicial?.fotos[0]);
+  const [fotos, setFotos] = useState<string[]>(inicial?.fotos ?? []);
   const [errorFoto, setErrorFoto] = useState(false);
   const [filas, setFilas] = useState<FilaVariante[]>(
     inicial
@@ -91,15 +92,18 @@ export function ProductoForm({ inicial }: { inicial?: ProductoAdmin }) {
       .catch(() => {});
   }, []);
 
-  const seleccionarFoto = async (archivo: File | null) => {
-    if (!archivo) return;
-    const resultado = await fotoADataUrl(archivo);
-    if ("error" in resultado) {
-      setErrorFoto(true);
-    } else {
-      setErrorFoto(false);
-      setFoto(resultado.dataUrl);
+  const seleccionarFotos = async (archivos: File[]) => {
+    const disponibles = MAX_FOTOS - fotos.length;
+    if (disponibles <= 0) return;
+    const resultados = await Promise.all(archivos.slice(0, disponibles).map(fotoADataUrl));
+    const nuevas: string[] = [];
+    let huboError = false;
+    for (const resultado of resultados) {
+      if ("error" in resultado) huboError = true;
+      else nuevas.push(resultado.dataUrl);
     }
+    setErrorFoto(huboError);
+    if (nuevas.length) setFotos((prev) => [...prev, ...nuevas]);
   };
 
   const cuerpoBase = () => ({
@@ -108,7 +112,7 @@ export function ProductoForm({ inicial }: { inicial?: ProductoAdmin }) {
     tipo,
     descripcion,
     categoria_id: categoriaId,
-    fotos: foto ? [foto] : [],
+    fotos,
   });
 
   const filaAVariante = (fila: FilaVariante) => ({
@@ -187,13 +191,14 @@ export function ProductoForm({ inicial }: { inicial?: ProductoAdmin }) {
             void guardar();
           }}
         >
-          <CampoFormulario label="Foto del producto" required>
+          <CampoFormulario label="Fotos del producto" required>
             <SubidorImagen
-              preview={foto}
+              previews={fotos}
               error={errorFoto}
               errorText={errorFoto ? ERROR_FOTO : undefined}
-              onSelect={(archivo) => void seleccionarFoto(archivo)}
-              onRemove={() => setFoto(undefined)}
+              hint={`PNG o JPG · máx 5 MB · mín 800×800 · hasta ${MAX_FOTOS} fotos`}
+              onSelect={(archivos) => void seleccionarFotos(archivos)}
+              onRemove={(indice) => setFotos((prev) => prev.filter((_, i) => i !== indice))}
             />
           </CampoFormulario>
 
