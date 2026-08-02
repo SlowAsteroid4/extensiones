@@ -85,7 +85,10 @@ Fase 1 (T4):
 - `GET /api/categorias` · `GET /api/testimonios`
 - `GET /api/productos?familia&tipo&largo&q&categoria` (AND estricto) ·
   `GET /api/productos/facetas` · `GET /api/productos/[slug]`
-- `POST /api/cuenta/registro`
+- `POST /api/cuenta/registro` (política de contraseña OWASP, campo trampa
+  anti-bot, máx 5 altas por IP/hora → 429) ·
+  `POST /api/cuenta/email-disponible` (¿el correo ya tiene cuenta?; máx 30
+  consultas por IP/10 min → 429)
 - Auth.js: `GET /api/auth/csrf` · `POST /api/auth/callback/credentials` (login,
   rate limit 5 fallos/15 min → 429) · `GET /api/auth/session` · `POST /api/auth/signout`
 - `GET/POST/DELETE /api/favoritos` (sesión requerida; DELETE con `?producto_id=`)
@@ -104,6 +107,23 @@ Fase 2 (T5):
 
 Pasarela: `PASARELA_PROVIDER=fake` (fixture local) o `mercadopago` (requiere
 `MERCADOPAGO_ACCESS_TOKEN`; ver `.env.example`).
+
+## Seguridad del alta de cuenta
+
+Política y controles (detalle y decisiones en `src/modules/cuenta/README.md`):
+
+| Control | Dónde |
+|---|---|
+| Contraseña: mín. 12 · máx. 128 · sin comunes, secuencias ni datos propios | `src/shared/validacion/password.ts` |
+| Correo: forma estricta, dominio ASCII, sin buzones automáticos ni desechables | `src/shared/validacion/email.ts` |
+| Contraste opcional contra filtraciones (HIBP k-anonymity, `PWNED_PASSWORDS_CHECK`) | `src/shared/seguridad/passwords-filtradas.ts` |
+| argon2id con parámetros explícitos (64 MiB · 3 pasadas · 4 hilos) | `src/modules/cuenta/registro.ts` |
+| Rate limit por IP, tope de cuerpo (4 KB) y respuestas `no-store` | `src/shared/seguridad/` |
+| Campo trampa anti-bot (sin CAPTCHA) | `CAMPO_TRAMPA` en `src/shared/validacion/schemas.ts` |
+
+La MISMA evaluación corre en el navegador (medidor animado con los requisitos)
+y en el servidor, así que lo que se ve marcado en verde es exactamente lo que
+acepta la API.
 
 ## Convenciones
 
