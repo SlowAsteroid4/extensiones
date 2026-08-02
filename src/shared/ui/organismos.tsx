@@ -6,6 +6,7 @@
 import type { ReactNode } from "react";
 import NextLink from "next/link";
 import { Icono } from "./icono";
+import { SelectorTema } from "./selector-tema";
 import { Boton, BotonIcono } from "./boton";
 import { GrupoFiltros, type GrupoFiltro } from "./producto";
 
@@ -29,6 +30,7 @@ export function EncabezadoTienda({
         <span className="text-[11px] font-semibold tracking-[0.22em] text-white/[0.92]">{sub}</span>
       </NextLink>
       <div className="flex items-center gap-1">
+        <SelectorTema tono="sobre-magenta" size={44} />
         <NextLink
           href={accountHref}
           aria-label="Mi cuenta"
@@ -43,7 +45,7 @@ export function EncabezadoTienda({
         >
           <Icono name="cart" size={22} />
           {cartCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-pill border-2 border-primario bg-text-strong px-[5px] text-[11px] font-bold leading-none text-white">
+            <span className="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-pill border-2 border-primario bg-inverso px-[5px] text-[11px] font-bold leading-none text-sobre-inverso">
               {cartCount}
             </span>
           )}

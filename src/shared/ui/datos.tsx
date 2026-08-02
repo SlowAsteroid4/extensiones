@@ -8,13 +8,15 @@ import { formatearPrecioMXN } from "@/shared/precio/formatear";
 
 export type TonoBadge = "category" | "sold-out" | "unavailable" | "count" | "success" | "accent";
 
+// Los rellenos usan tokens de FILL (no de texto): btn-primary, inverso y
+// acento no se invierten con el tema, así el blanco/ciruela de encima aguanta.
 const TONOS_BADGE: Record<TonoBadge, string> = {
   category: "bg-superficie text-secundario",
-  "sold-out": "bg-secundario text-white",
+  "sold-out": "bg-btn-primary text-white",
   unavailable: "bg-surface-muted text-text-muted border border-border-strong",
-  count: "bg-text-strong text-white",
+  count: "bg-inverso text-sobre-inverso",
   success: "bg-success-surface text-success border border-success-border",
-  accent: "bg-acento text-text-strong",
+  accent: "bg-acento text-sobre-acento",
 };
 
 export function Badge({

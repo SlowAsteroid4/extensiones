@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
 /*
+ * La variante `dark:` sigue el atributo data-tema del <html> (lo escribe el
+ * script anti-parpadeo de layout.tsx), no prefers-color-scheme: así el
+ * selector manual de tema puede ganarle a la preferencia del sistema.
+ */
+@custom-variant dark (&:where([data-tema="oscuro"], [data-tema="oscuro"] *));
+
+/*
  * Tokens de la dirección "Magenta audaz".
  * Base cerrada (encargo T3) + tokens derivados importados del design system
  * oficial (claude_design · _ds/…/tokens/*.css, encargo 05) en T6.
@@ -9,6 +16,10 @@
  *
  * REGLA DE DISEÑO: el magenta (primario/secundario) JAMÁS en texto de cuerpo
  * pequeño — solo en elementos ≥16px con peso ≥700 (precio, display, fills).
+ *
+ * MODO OSCURO: este bloque es el tema CLARO. El tema oscuro sólo reasigna los
+ * mismos tokens más abajo, en :root[data-tema="oscuro"] — ningún componente
+ * necesita variantes dark: porque todos pintan a través de estos nombres.
  */
 @theme {
   /* ---- Colores · base cerrada (T3, intocable) ---- */
@@ -18,6 +29,21 @@
   --color-acento: #ff8fc4;
   --color-texto: #2b1620;
   --color-superficie: #fce0ef;
+
+  /* ---- Fondo de página vs. fondo de tarjeta ----
+     En claro son el mismo blanco; en oscuro la tarjeta se eleva sobre la
+     página. Separarlos permite que --color-fondo (tarjetas, header, sheets,
+     inputs) suba de nivel sin tocar ningún componente. */
+  --color-fondo-pagina: #ffffff;
+
+  /* ---- Pares fill/texto que NO se invierten con el tema ----
+     Sobre estos rellenos el texto es blanco (o ciruela) en ambos temas, así
+     que se nombran aparte en vez de reusar tokens de texto que sí invierten. */
+  --color-sobre-fill: #ffffff; /* texto/spinner sobre relleno magenta o rojo */
+  --color-inverso: #2b1620; /* toast, badge contador, chip de cierre */
+  --color-sobre-inverso: #ffffff;
+  --color-sobre-acento: #2b1620; /* texto sobre el rosa claro de acento */
+  --color-pie: #2b1620; /* footer de sitio (siempre oscuro) */
 
   /* ---- Colores · estados del magenta héroe (fills no-texto) ---- */
   --color-primary-hover: #e10680;
@@ -52,8 +78,12 @@
   --color-border-strong: #e7bbd2;
   --color-border-focus: #ff0891;
 
-  /* ---- Semánticos ---- */
+  /* ---- Semánticos ----
+     --color-error es color de TEXTO/borde (se aclara en oscuro);
+     --color-error-fill es el relleno del botón destructivo (se mantiene hondo
+     en ambos temas para conservar el blanco encima). */
   --color-error: #c11439;
+  --color-error-fill: #c11439;
   --color-error-hover: #a20f30;
   --color-error-pressed: #880b28;
   --color-error-surface: #fce8ec;
@@ -225,8 +255,105 @@
   }
 }
 
+/* Barras de scroll y controles nativos (date pickers, selects) siguen al tema. */
+:root {
+  color-scheme: light;
+}
+
+/*
+ * ─── Tema oscuro ──────────────────────────────────────────────────────────
+ * Reasigna los MISMOS tokens del @theme de arriba. El atributo data-tema lo
+ * pone el script anti-parpadeo antes del primer paint (src/app/layout.tsx),
+ * por eso basta con la especificidad de :root[data-tema] para ganarle al
+ * :root que emite Tailwind.
+ *
+ * Se conserva la regla de diseño: el magenta hero sigue siendo hero, y el
+ * magenta oscuro (secundario) se aclara porque en oscuro se usa como TEXTO
+ * — sobre #0f070c #c6006e sólo da 3.4:1.
+ */
+:root[data-tema="oscuro"] {
+  color-scheme: dark;
+
+  /* ---- Base ---- */
+  --color-fondo-pagina: #0f070c;
+  --color-fondo: #1a1017;
+  --color-primario: #ff0891;
+  --color-secundario: #ff8fc4;
+  --color-acento: #ff8fc4;
+  --color-texto: #f7ebf2;
+  --color-superficie: #2e1a24;
+
+  /* ---- Estados del magenta héroe (fills no-texto) ---- */
+  --color-primary-hover: #ff3da8;
+  --color-primary-pressed: #e10680;
+  --color-primary-disabled: #6d2a4c;
+
+  /* ---- Botón primario sólido ---- */
+  --color-btn-primary: #cf0d78;
+  --color-btn-primary-hover: #e51287;
+  --color-btn-primary-pressed: #b30a67;
+  --color-btn-primary-disabled: #5a2542;
+
+  /* ---- Secundario / outline ---- */
+  --color-secondary-hover: #ffa9d1;
+  --color-secondary-pressed: #ff7ab9;
+  --color-outline-border: #ff4fa8;
+  --color-outline-text: #ff9ecb;
+  --color-outline-hover-bg: #2a1420;
+  --color-outline-disabled-border: #4a2c3c;
+  --color-outline-disabled-text: #7b5c69;
+
+  /* ---- Jerarquía de texto ---- */
+  --color-text-strong: #f7ebf2;
+  --color-text-muted: #c3a9b7;
+  --color-text-subtle: #9d8390;
+  --color-text-disabled: #6d5761;
+
+  /* ---- Superficies y bordes ---- */
+  --color-surface-strong: #3d2230;
+  --color-surface-muted: #1d1018;
+  --color-border: #402a37;
+  --color-border-strong: #59394a;
+  --color-border-focus: #ff4fa8;
+
+  /* ---- Pares fill/texto que no se invierten ---- */
+  --color-sobre-fill: #ffffff;
+  --color-inverso: #5c3849;
+  --color-sobre-inverso: #ffffff;
+  --color-sobre-acento: #2b1620;
+  --color-pie: #0a0509;
+
+  /* ---- Semánticos ---- */
+  --color-error: #ff8a9f;
+  --color-error-fill: #d0203f;
+  --color-error-hover: #b0182f;
+  --color-error-pressed: #8f1226;
+  --color-error-surface: #3a1620;
+  --color-error-border: #6b2233;
+  --color-success: #5fd99a;
+  --color-success-surface: #12291d;
+  --color-success-border: #2f5b43;
+
+  /* ---- Overlay, focus, skeleton ---- */
+  --color-overlay: rgb(6 2 4 / 0.72);
+  --color-focus-ring: rgb(255 79 168 / 0.45);
+  --color-skeleton-base: #2a1822;
+  --color-skeleton-shine: #3a2430;
+
+  /* ---- Sombras: en oscuro el tinte rosa no se ve, sube el negro ---- */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.5);
+  --shadow-card: 0 4px 16px rgb(0 0 0 / 0.5);
+  --shadow-card-hover: 0 10px 28px rgb(0 0 0 / 0.62);
+  --shadow-button: 0 4px 12px rgb(255 8 145 / 0.34);
+  --shadow-popover: 0 8px 24px rgb(0 0 0 / 0.62);
+  --shadow-toast: 0 8px 28px rgb(0 0 0 / 0.66);
+  --shadow-modal: 0 16px 48px rgb(0 0 0 / 0.7);
+  --shadow-sheet: 0 -8px 32px rgb(0 0 0 / 0.62);
+  --shadow-focus: 0 0 0 3px rgb(255 79 168 / 0.45);
+}
+
 body {
-  background: var(--color-fondo);
+  background: var(--color-fondo-pagina);
   color: var(--color-texto);
   font-family: var(--font-sans);
   font-size: var(--text-cuerpo);

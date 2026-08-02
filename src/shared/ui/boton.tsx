@@ -19,7 +19,7 @@ const PIELES: Record<string, string> = {
   secondary:
     "border-outline-border bg-transparent text-outline-text hover:bg-outline-hover-bg active:border-secondary-pressed disabled:border-outline-disabled-border disabled:text-outline-disabled-text disabled:bg-transparent",
   destructive:
-    "border-transparent bg-error text-white hover:bg-error-hover active:bg-error-pressed disabled:bg-error-border",
+    "border-transparent bg-error-fill text-white hover:bg-error-hover active:bg-error-pressed disabled:bg-error-border",
   whatsapp:
     "border-outline-border bg-transparent text-secundario hover:bg-outline-hover-bg disabled:border-outline-disabled-border disabled:text-outline-disabled-text",
 };
@@ -74,7 +74,8 @@ export function Boton({
             width: t.icon,
             height: t.icon,
             border: `2px solid ${claro ? "rgb(255 255 255 / 0.4)" : "rgb(198 0 110 / 0.3)"}`,
-            borderTopColor: claro ? "var(--color-fondo)" : "var(--color-secundario)",
+            // Sobre relleno magenta/rojo el spinner va blanco fijo (ver Spinner).
+            borderTopColor: claro ? "var(--color-sobre-fill)" : "var(--color-secundario)",
           }}
         />
       )}
@@ -160,7 +161,7 @@ export function BotonIcono({
         />
       </span>
       {badge != null && badge > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-pill border-2 border-fondo bg-text-strong px-[5px] text-[11px] font-bold leading-none text-white">
+        <span className="absolute -right-0.5 -top-0.5 inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-pill border-2 border-fondo bg-inverso px-[5px] text-[11px] font-bold leading-none text-sobre-inverso">
           {badge}
         </span>
       )}

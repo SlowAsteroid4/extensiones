@@ -72,7 +72,9 @@ export function Spinner({ size = 20, tone = "primary", style }: { size?: number;
         width: size,
         height: size,
         border: `${Math.max(2, Math.round(size / 10))}px solid ${claro ? "rgb(255 255 255 / 0.4)" : "rgb(198 0 110 / 0.25)"}`,
-        borderTopColor: claro ? "var(--color-fondo)" : "var(--color-secundario)",
+        // tone="light" gira sobre un relleno magenta: va blanco fijo, no
+        // --color-fondo, que en oscuro es casi negro.
+        borderTopColor: claro ? "var(--color-sobre-fill)" : "var(--color-secundario)",
         ...style,
       }}
     />
@@ -107,7 +109,7 @@ export function Toast({
     <div
       role="status"
       className={[
-        "flex w-full max-w-[420px] animate-ls-toast-in items-center gap-3 rounded-md bg-text-strong px-3.5 py-3 text-white shadow-toast",
+        "flex w-full max-w-[420px] animate-ls-toast-in items-center gap-3 rounded-md bg-inverso px-3.5 py-3 text-sobre-inverso shadow-toast",
         className,
       ].join(" ")}
     >

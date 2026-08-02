@@ -320,7 +320,7 @@ export function SelectorVariantes({
               </span>
             )}
             {agotada && (
-              <span className="absolute -top-2 -right-1.5 rounded-pill bg-secundario px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.04em] text-white">
+              <span className="absolute -top-2 -right-1.5 rounded-pill bg-btn-primary px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.04em] text-white">
                 Agotado
               </span>
             )}
@@ -442,7 +442,7 @@ export function SubidorImagen({
                 onRemove?.();
               }}
               aria-label="Quitar imagen"
-              className="absolute right-2 top-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-text-strong text-white"
+              className="absolute right-2 top-2 inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-inverso text-sobre-inverso"
             >
               <Icono name="close" size={16} />
             </button>
