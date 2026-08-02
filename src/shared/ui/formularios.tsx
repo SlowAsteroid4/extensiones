@@ -2,7 +2,7 @@
 // Formularios del DS "Magenta audaz": Input, FormField, Chip, Toggle,
 // QuantityStepper, VariantSelector, EditableVariantRow, ImageUploader.
 // Regla vinculante: errores INLINE bajo el campo, sin perder lo capturado.
-import { useState, type InputHTMLAttributes, type ReactNode } from "react";
+import { useState, type InputHTMLAttributes, type ReactNode, type Ref } from "react";
 import { BotonIcono } from "./boton";
 import { Icono, type NombreIcono } from "./icono";
 import { Label } from "./datos";
@@ -17,6 +17,9 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   prefix?: string;
   icon?: NombreIcono;
   contenedorClassName?: string;
+  // React 19: `ref` es un prop normal — el formulario de alta lo usa para
+  // devolver el foco al campo que falló.
+  ref?: Ref<HTMLInputElement>;
 }
 
 export function Input({
@@ -28,6 +31,7 @@ export function Input({
   icon,
   disabled = false,
   id,
+  ref,
   contenedorClassName = "",
   className = "",
   ...rest
@@ -51,6 +55,7 @@ export function Input({
         {prefix && <span className="text-[14px] font-semibold text-text-muted">{prefix}</span>}
         <input
           id={id}
+          ref={ref}
           type={tipoEfectivo}
           disabled={disabled}
           className={[

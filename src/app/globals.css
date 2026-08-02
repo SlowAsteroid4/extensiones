@@ -133,6 +133,11 @@
   --animate-ls-toast-in: ls-toast-in 240ms var(--ease-decelerate);
   --animate-ls-modal-in: ls-modal-in 320ms var(--ease-decelerate);
   --animate-ls-heart-pop: ls-heart-pop 200ms var(--ease-spring);
+  /* C1 · alta de cuenta: el requisito recién cumplido "salta", la fila entra
+     desde arriba y el campo con error se sacude una vez. */
+  --animate-ls-check-pop: ls-check-pop 280ms var(--ease-spring);
+  --animate-ls-item-in: ls-item-in 220ms var(--ease-decelerate) both;
+  --animate-ls-shake: ls-shake 320ms var(--ease-standard);
 
   @keyframes ls-spin {
     to {
@@ -179,6 +184,45 @@
       transform: scale(1);
     }
   }
+  @keyframes ls-check-pop {
+    0% {
+      opacity: 0.4;
+      transform: scale(0.55);
+    }
+    55% {
+      opacity: 1;
+      transform: scale(1.22);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes ls-item-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes ls-shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(-5px);
+    }
+    45% {
+      transform: translateX(4px);
+    }
+    70% {
+      transform: translateX(-2px);
+    }
+  }
 }
 
 body {
@@ -203,5 +247,7 @@ body {
   * {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
+    /* El medidor de contraseña anima con transition, no solo con keyframes. */
+    transition-duration: 0.001ms !important;
   }
 }
