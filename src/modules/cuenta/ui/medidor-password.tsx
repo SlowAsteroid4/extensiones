@@ -60,6 +60,10 @@ export function MedidorPassword({
   vacia: boolean;
 }) {
   const { fuerza, etiquetaFuerza, requisitos, senales } = evaluacion;
+  // El texto pequeño nunca usa text-subtle: sobre surface-muted se queda en
+  // 3.2:1 y no llega a AA (auditoría de contraste del encargo del modo oscuro).
+  const colorEtiqueta =
+    vacia || fuerza === 2 ? "text-text-muted" : fuerza <= 1 ? "text-error" : "text-success";
 
   return (
     <div
@@ -67,14 +71,14 @@ export function MedidorPassword({
       className="animate-ls-item-in mt-2.5 rounded-lg border border-border bg-surface-muted p-3.5"
     >
       <div className="flex items-center justify-between gap-3">
-        <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-text-subtle">
+        <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-text-muted">
           Seguridad
         </span>
         <span
           aria-live="polite"
           className={[
             "text-[13px] font-bold transition-colors duration-200 ease-standard",
-            vacia ? "text-text-subtle" : fuerza <= 1 ? "text-error" : fuerza >= 3 ? "text-success" : "text-text-muted",
+            colorEtiqueta,
           ].join(" ")}
         >
           {vacia ? "Aún sin contraseña" : etiquetaFuerza}
@@ -103,7 +107,7 @@ export function MedidorPassword({
       </ul>
 
       <div className="mt-3 flex flex-wrap items-center gap-1.5">
-        <span className="text-[12px] font-medium text-text-subtle">Suma fuerza:</span>
+        <span className="text-[12px] font-medium text-text-muted">Suma fuerza:</span>
         {senales.map((senal) => (
           <span
             key={senal.id}
@@ -112,7 +116,7 @@ export function MedidorPassword({
               "transition-[background-color,border-color,color] duration-200 ease-standard",
               !vacia && senal.cumple
                 ? "border-success-border bg-success-surface text-success"
-                : "border-border bg-fondo text-text-subtle",
+                : "border-border bg-fondo text-text-muted",
             ].join(" ")}
           >
             <span className="sr-only">{!vacia && senal.cumple ? "incluye " : "sin "}</span>
