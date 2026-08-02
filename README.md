@@ -139,17 +139,24 @@ Hosting **Vercel** (plan Hobby) + base de datos **Neon** (Postgres gestionado).
 `push a main → producción`. Vercel está conectado al repo: cada push a `main`
 dispara un despliegue. No hay paso manual.
 
-El build que corre Vercel es el script **`vercel-build`** de `package.json`
-(Vercel lo prefiere sobre `build` cuando existe):
+El comando de build está fijado en **`vercel.json`** (`buildCommand`), no en el
+dashboard, para que viva versionado y no dependa de que nadie recuerde
+configurarlo:
 
 ```
-prisma migrate deploy && next build
+vercel.json  →  buildCommand: "npm run vercel-build"
+package.json →  vercel-build: "prisma migrate deploy && next build"
 ```
 
 Es decir: **las migraciones pendientes se aplican solas en cada despliegue**.
 Un cambio de schema se sube como migración en el PR y se aplica al mergear.
 `npm run build` (sin `vercel-`) se deja sin migraciones para que el build local
 nunca toque una base ajena.
+
+> Por qué `vercel.json` y no solo el script: para Next.js, Vercel usa el script
+> `build` de `package.json`; que además prefiera uno llamado `vercel-build` no
+> está documentado hoy. Fijar `buildCommand` explícitamente quita la duda — si
+> fallara, las migraciones simplemente no correrían y el fallo sería silencioso.
 
 ### Las dos cadenas de Neon
 
