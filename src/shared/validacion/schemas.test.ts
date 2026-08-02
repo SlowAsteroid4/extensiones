@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   MENSAJE_EMAIL,
-  MENSAJE_PASSWORD,
   categoriaSchema,
   cuentaSchema,
   familiaTonoSchema,
@@ -14,6 +13,8 @@ import {
   testimonioSchema,
   varianteLargoSchema,
 } from "./schemas";
+import { MENSAJE_EMAIL_DESECHABLE } from "./email";
+import { MENSAJE_PASSWORD_CORTA, MENSAJE_PASSWORD_PERSONAL } from "./password";
 import { FAMILIAS_TONO } from "./familias";
 
 describe("familiaTonoSchema", () => {
@@ -122,20 +123,23 @@ describe("pedidoItemSchema", () => {
 });
 
 describe("registroSchema (H07)", () => {
-  it("acepta email válido y contraseña de 8+", () => {
-    const resultado = registroSchema.safeParse({ email: "Ana@Example.com", password: "12345678" });
+  const PASSWORD_OK = "trenzas-de-verano-77";
+
+  it("acepta email válido y contraseña que cumple la política", () => {
+    const resultado = registroSchema.safeParse({ email: "Ana@Example.com", password: PASSWORD_OK });
     expect(resultado.success).toBe(true);
     expect(resultado.success && resultado.data.email).toBe("ana@example.com"); // normaliza a minúsculas
   });
 
-  it("rechaza contraseña <8 con el mensaje del requisito exacto", () => {
-    const resultado = registroSchema.safeParse({ email: "ana@example.com", password: "1234567" });
+  it("rechaza contraseña corta con el mensaje del requisito exacto", () => {
+    const resultado = registroSchema.safeParse({ email: "ana@example.com", password: "Corta-12" });
     expect(resultado.success).toBe(false);
-    expect(!resultado.success && resultado.error.issues[0].message).toBe(MENSAJE_PASSWORD);
+    expect(!resultado.success && resultado.error.issues[0].message).toBe(MENSAJE_PASSWORD_CORTA);
+    expect(!resultado.success && resultado.error.issues[0].path[0]).toBe("password");
   });
 
   it("rechaza email con formato inválido con mensaje claro", () => {
-    const resultado = registroSchema.safeParse({ email: "no-es-email", password: "12345678" });
+    const resultado = registroSchema.safeParse({ email: "no-es-email", password: PASSWORD_OK });
     expect(resultado.success).toBe(false);
     expect(!resultado.success && resultado.error.issues[0].message).toBe(MENSAJE_EMAIL);
   });
@@ -143,10 +147,35 @@ describe("registroSchema (H07)", () => {
   it("rechaza HTML en el nombre", () => {
     const resultado = registroSchema.safeParse({
       email: "ana@example.com",
-      password: "12345678",
+      password: PASSWORD_OK,
       nombre: "<img src=x>",
     });
     expect(resultado.success).toBe(false);
+  });
+
+  it("el nombre vacío se trata como ausente (no como error)", () => {
+    const resultado = registroSchema.safeParse({
+      email: "ana@example.com",
+      password: PASSWORD_OK,
+      nombre: "   ",
+    });
+    expect(resultado.success).toBe(true);
+    expect(resultado.success && resultado.data.nombre).toBeUndefined();
+  });
+
+  it("rechaza la contraseña que recicla el correo (OSINT) señalando el campo", () => {
+    const resultado = registroSchema.safeParse({
+      email: "anagabriela@example.com",
+      password: "AnaGabriela2026!",
+    });
+    expect(resultado.success).toBe(false);
+    expect(!resultado.success && resultado.error.issues[0].message).toBe(MENSAJE_PASSWORD_PERSONAL);
+  });
+
+  it("rechaza correo desechable con el motivo de la lista OSINT", () => {
+    const resultado = registroSchema.safeParse({ email: "ana@mailinator.com", password: PASSWORD_OK });
+    expect(resultado.success).toBe(false);
+    expect(!resultado.success && resultado.error.issues[0].message).toBe(MENSAJE_EMAIL_DESECHABLE);
   });
 });
 
