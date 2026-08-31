@@ -2,6 +2,7 @@
 // se activa con PASARELA_PROVIDER=mercadopago + MERCADOPAGO_ACCESS_TOKEN de env.
 // FASE B pendiente: aún sin ejercitar contra el sandbox real (sin credenciales).
 import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
+import { urlApp } from "@/shared/config/app-url";
 import type { EstadoPagoPasarela, InfoPago, PasarelaProvider, PreferenciaCreada } from "./provider";
 
 // Mapeo de estados de pago de MP → estados de la pasarela (función pura, testeable).
@@ -25,7 +26,9 @@ export function crearProveedorMercadoPago(): PasarelaProvider {
       "Falta MERCADOPAGO_ACCESS_TOKEN en el entorno (usa PASARELA_PROVIDER=fake mientras tanto)."
     );
   }
-  const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+  // T8: sale de env (APP_URL en Vercel, o VERCEL_URL en previews). Es lo que
+  // hace que notification_url y back_urls apunten al dominio real sin tocar código.
+  const appUrl = urlApp();
   const cliente = new MercadoPagoConfig({ accessToken });
 
   return {

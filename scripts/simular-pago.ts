@@ -8,6 +8,7 @@
 import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import { construirManifiesto, firmarManifiesto } from "../src/modules/compra/pasarela/firma";
+import { urlApp } from "../src/shared/config/app-url";
 
 async function main() {
   const argumentos = process.argv.slice(2).filter((a) => a !== "--");
@@ -31,7 +32,8 @@ async function main() {
     process.exit(1);
   }
 
-  const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+  // Apunta a APP_URL: en localhost al dev server, en producción a la URL pública.
+  const appUrl = urlApp();
   const dataId = `fake-pago-${rechazado ? "rechazado" : "aprobado"}-${folio}`;
   const requestId = randomUUID();
   const ts = String(Math.floor(Date.now() / 1000));
