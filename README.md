@@ -108,6 +108,18 @@ Fase 2 (T5):
   toggle `activo`) · `PATCH /api/admin/variantes/[id]` (existencias/precio) ·
   `GET|POST /api/admin/testimonios` · `PATCH|DELETE /api/admin/testimonios/[id]`
 
+Fase 3 (T9):
+
+- `GET /api/admin/pedidos?estado&pagina&por_pagina` (bitácora de ventas:
+  paginada, fecha desc) · `GET /api/admin/pedidos/[folio]` (detalle CON datos
+  de contacto — a diferencia del `GET /api/pedidos/[folio]` público, que no
+  los expone). Ambos solo rol admin. Pantallas en `/admin/pedidos`.
+- `GET /api/health` (público): verifica conexión a la DB — `{ok, db}`, sin
+  información sensible.
+- Observabilidad: Sentry vía `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` (vacíos =
+  apagado) · prueba de carga k6 en `load/` (ver su README) · headers de
+  seguridad globales en `next.config.ts` · guía de operación en `ENTREGA.md`.
+
 Pasarela: `PASARELA_PROVIDER=fake` (fixture local) o `mercadopago` (requiere
 `MERCADOPAGO_ACCESS_TOKEN`; ver `.env.example`).
 
@@ -192,6 +204,8 @@ nunca en el repo. `.env.example` documenta cada una.
 | `MERCADOPAGO_WEBHOOK_SECRET` | valor propio, no el fixture | verifica la firma HMAC del webhook |
 | `PWNED_PASSWORDS_CHECK` | `on` | contrasta contraseñas contra filtraciones al registrarse |
 | `NEXT_PUBLIC_WHATSAPP_NUMERO` | el número real de la tienda | CTA de WhatsApp. **Se incrusta en el bundle del navegador: nunca un secreto con prefijo `NEXT_PUBLIC_`** |
+| `SENTRY_DSN` | DSN del proyecto en sentry.io | errores de servidor a Sentry (vacío = apagado) |
+| `NEXT_PUBLIC_SENTRY_DSN` | el mismo DSN | errores del navegador a Sentry (el DSN no es secreto: solo permite enviar eventos) |
 
 No se cargan en Vercel: `SEED_ADMIN_*` (las lee el seed, que se corre a mano),
 ni `POSTGRES_*` (son del docker-compose local).

@@ -34,6 +34,37 @@ export interface TestimonioAdmin {
   activo: boolean;
 }
 
+// T9 · Bitácora de ventas (GET /api/admin/pedidos y /api/admin/pedidos/[folio]).
+export type EstadoPedidoAdmin = "pendiente" | "pagado_sandbox" | "rechazado";
+
+export interface PedidoAdminResumen {
+  folio: string;
+  creado_en: string;
+  total_mxn: number;
+  estado: EstadoPedidoAdmin;
+  piezas: number;
+}
+
+export interface PedidoAdminDetalle {
+  folio: string;
+  creado_en: string;
+  total_mxn: number;
+  estado: EstadoPedidoAdmin;
+  email_contacto: string;
+  telefono_contacto: string | null;
+  cuenta: { nombre: string } | null;
+  items: {
+    cantidad: number;
+    precio_unitario_congelado: number;
+    variante: {
+      id: string;
+      largo_pulgadas: number;
+      sku: string;
+      producto: { nombre_tono: string; slug: string; fotos: string[] };
+    };
+  }[];
+}
+
 /* Barra superior del panel (no es StoreHeader: contexto admin). */
 export function BarraAdmin({
   title,
@@ -66,10 +97,11 @@ export function BarraAdmin({
   );
 }
 
-/* Navegación interna del panel (productos · testimonios · volver a la tienda). */
-export function NavAdmin({ activa }: { activa: "productos" | "testimonios" }) {
+/* Navegación interna del panel (productos · pedidos · testimonios · volver a la tienda). */
+export function NavAdmin({ activa }: { activa: "productos" | "pedidos" | "testimonios" }) {
   const enlaces = [
     { clave: "productos", href: "/admin/productos", etiqueta: "Productos" },
+    { clave: "pedidos", href: "/admin/pedidos", etiqueta: "Pedidos" },
     { clave: "testimonios", href: "/admin/testimonios", etiqueta: "Testimonios" },
   ] as const;
   return (
