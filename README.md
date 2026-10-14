@@ -108,6 +108,18 @@ Fase 2 (T5):
   toggle `activo`) · `PATCH /api/admin/variantes/[id]` (existencias/precio) ·
   `GET|POST /api/admin/testimonios` · `PATCH|DELETE /api/admin/testimonios/[id]`
 
+Fase 3 (T9):
+
+- `GET /api/admin/pedidos?estado&pagina&por_pagina` (bitácora de ventas:
+  paginada, fecha desc) · `GET /api/admin/pedidos/[folio]` (detalle CON datos
+  de contacto — a diferencia del `GET /api/pedidos/[folio]` público, que no
+  los expone). Ambos solo rol admin. Pantallas en `/admin/pedidos`.
+- `GET /api/health` (público): verifica conexión a la DB — `{ok, db}`, sin
+  información sensible.
+- Observabilidad: Sentry vía `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` (vacíos =
+  apagado) · prueba de carga k6 en `load/` (ver su README) · headers de
+  seguridad globales en `next.config.ts` · guía de operación en `ENTREGA.md`.
+
 Pasarela: `PASARELA_PROVIDER=fake` (fixture local) o `mercadopago` (requiere
 `MERCADOPAGO_ACCESS_TOKEN`; ver `.env.example`).
 
@@ -130,7 +142,9 @@ acepta la API.
 
 ## Producción
 
-**URL pública:** _(pendiente — se llena en cuanto el dueño autorice el proyecto en Vercel)_
+**URL pública:** https://www.lys-extensiones.com (el apex redirige a `www`
+con 308). Salud: https://www.lys-extensiones.com/api/health. Guía de operación
+para la clienta y el dueño: [`ENTREGA.md`](ENTREGA.md).
 
 Hosting **Vercel** (plan Hobby) + base de datos **Neon** (Postgres gestionado).
 
@@ -192,6 +206,8 @@ nunca en el repo. `.env.example` documenta cada una.
 | `MERCADOPAGO_WEBHOOK_SECRET` | valor propio, no el fixture | verifica la firma HMAC del webhook |
 | `PWNED_PASSWORDS_CHECK` | `on` | contrasta contraseñas contra filtraciones al registrarse |
 | `NEXT_PUBLIC_WHATSAPP_NUMERO` | el número real de la tienda | CTA de WhatsApp. **Se incrusta en el bundle del navegador: nunca un secreto con prefijo `NEXT_PUBLIC_`** |
+| `SENTRY_DSN` | DSN del proyecto en sentry.io | errores de servidor a Sentry (vacío = apagado) |
+| `NEXT_PUBLIC_SENTRY_DSN` | el mismo DSN | errores del navegador a Sentry (el DSN no es secreto: solo permite enviar eventos) |
 
 No se cargan en Vercel: `SEED_ADMIN_*` (las lee el seed, que se corre a mano),
 ni `POSTGRES_*` (son del docker-compose local).
@@ -221,16 +237,16 @@ No se toca código — el adapter real ya existe desde T5 y sale de
 3. Redesplegar (Vercel → Deployments → Redeploy). Las variables solo se leen al
    arrancar; sin redespliegue el cambio no toma efecto.
 
-### Dominio propio (T11)
+### Dominio propio — activado
 
-Cuando haya acceso al DNS de `lys-extensiones.com`:
+`www.lys-extensiones.com` es la dirección principal (`A @ 76.76.21.21`,
+`CNAME www cname.vercel-dns.com`) y `APP_URL` ya apunta ahí, así que
+`back_urls`/`notification_url` salen del dominio. El webhook de MercadoPago,
+cuando se active, va a `https://www.lys-extensiones.com/api/webhooks/mercadopago`
+(con `www`: una redirección rompe el POST del aviso).
 
-1. Vercel → Settings → Domains → agregar el dominio; Vercel dicta los registros
-   DNS (`A`/`CNAME`) y emite el certificado.
-2. Cambiar `APP_URL` a `https://lys-extensiones.com` y **redesplegar** — de ahí
-   salen `back_urls` y `notification_url`, así que sin este paso los retornos de
-   pago seguirían apuntando a `*.vercel.app`.
-3. Si ya estaba MercadoPago conectado, actualizar también la URL del webhook.
+El DNS lo sirven `ns84/ns85.hostgator.mx`. Estado, incidencias abiertas y pasos
+de reversión: `ENTREGA.md` §3.
 
 ## Convenciones
 
