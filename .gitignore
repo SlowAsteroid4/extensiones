@@ -40,6 +40,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Claude Code: worktrees y ajustes locales. launch.json es la excepción
+# versionada (config compartida del servidor de desarrollo, sin rutas locales).
+/.claude/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
