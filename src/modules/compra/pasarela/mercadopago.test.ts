@@ -20,6 +20,8 @@ vi.mock("mercadopago", () => ({
   },
 }));
 
+import { prisma } from "@/shared/db/client";
+import { crearPedido } from "../pedidos";
 import { crearProveedorMercadoPago, elegirUrlCheckout, mapearEstadoMP } from "./mercadopago";
 
 const URLS = {
@@ -59,8 +61,8 @@ describe("elegirUrlCheckout", () => {
     expect(elegirUrlCheckout(URLS, false)).toBe(URLS.init_point);
   });
 
-  it("cuenta de prueba sin sandbox_init_point → cae a init_point", () => {
-    expect(elegirUrlCheckout({ init_point: URLS.init_point }, true)).toBe(URLS.init_point);
+  it("cuenta de prueba sin sandbox_init_point → ninguna URL (nunca la de producción)", () => {
+    expect(elegirUrlCheckout({ init_point: URLS.init_point }, true)).toBeUndefined();
   });
 });
 
@@ -96,15 +98,31 @@ describe("crearProveedorMercadoPago · crearPreferencia", () => {
     expect(preferencia.init_point).toBe(URLS.init_point);
   });
 
-  it("si /users/me falla → producción y reintenta la detección en la siguiente llamada", async () => {
+  it("si /users/me falla → rechaza SIN crear preferencia, y reintenta en la siguiente llamada", async () => {
     obtenerUsuarioMock.mockRejectedValueOnce(new Error("red caída"));
-    vi.spyOn(console, "warn").mockImplementation(() => {});
     const proveedor = crearProveedorMercadoPago();
 
-    expect((await proveedor.crearPreferencia(DATOS)).init_point).toBe(URLS.init_point);
+    await expect(proveedor.crearPreferencia(DATOS)).rejects.toThrow("red caída");
+    expect(crearPreferenciaMock).not.toHaveBeenCalled();
 
     obtenerUsuarioMock.mockResolvedValueOnce({ tags: ["test_user"] });
     expect((await proveedor.crearPreferencia(DATOS)).init_point).toBe(URLS.sandbox_init_point);
+  });
+
+  it("si /users/me responde sin tags → rechaza (no supone producción)", async () => {
+    obtenerUsuarioMock.mockResolvedValue({ id: 1 });
+
+    await expect(crearProveedorMercadoPago().crearPreferencia(DATOS)).rejects.toThrow("tags");
+    expect(crearPreferenciaMock).not.toHaveBeenCalled();
+  });
+
+  it("cuenta de prueba y MP sin sandbox_init_point → rechaza (no entrega producción)", async () => {
+    obtenerUsuarioMock.mockResolvedValue({ tags: ["test_user"] });
+    crearPreferenciaMock.mockResolvedValue({ id: "pref-123", init_point: URLS.init_point });
+
+    await expect(crearProveedorMercadoPago().crearPreferencia(DATOS)).rejects.toThrow(
+      "sandbox_init_point"
+    );
   });
 
   it("consulta /users/me una sola vez por token", async () => {
@@ -125,5 +143,33 @@ describe("crearProveedorMercadoPago · crearPreferencia", () => {
     const { body } = crearPreferenciaMock.mock.calls[0][0];
     expect(body.external_reference).toBe("LS-K3M8QP");
     expect(body.items[0]).toMatchObject({ quantity: 1, currency_id: "MXN", unit_price: 2890 });
+  });
+});
+
+describe("checkout con el adapter de MP cuando /users/me falla (integración, DB de test)", () => {
+  const EMAIL = "test-mp-falla-cerrada@example.com";
+  const tokenOriginal = process.env.MERCADOPAGO_ACCESS_TOKEN;
+
+  afterEach(async () => {
+    process.env.MERCADOPAGO_ACCESS_TOKEN = tokenOriginal;
+    await prisma.pedidoItem.deleteMany({ where: { pedido: { email_contacto: EMAIL } } });
+    await prisma.pedido.deleteMany({ where: { email_contacto: EMAIL } });
+  });
+
+  it("falla cerrado: 502 y ningún pedido queda en la base", async () => {
+    process.env.MERCADOPAGO_ACCESS_TOKEN = "token-falso-de-test-integracion";
+    obtenerUsuarioMock.mockReset().mockRejectedValue(new Error("MP no responde"));
+    crearPreferenciaMock.mockReset();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const antes = await prisma.pedido.count({ where: { email_contacto: EMAIL } });
+
+    const resultado = await crearPedido(
+      { items: [{ variante_id: "var_cas_001_18", cantidad: 1 }], email_contacto: EMAIL },
+      crearProveedorMercadoPago()
+    );
+
+    expect(resultado).toMatchObject({ ok: false, status: 502 });
+    expect(await prisma.pedido.count({ where: { email_contacto: EMAIL } })).toBe(antes);
+    expect(crearPreferenciaMock).not.toHaveBeenCalled();
   });
 });

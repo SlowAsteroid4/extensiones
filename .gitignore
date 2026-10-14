@@ -40,6 +40,10 @@ yarn-error.log*
 # vercel
 .vercel
 
+# Claude Code: worktrees y ajustes locales. Los archivos de .claude/ que ya
+# estaban versionados (launch.json, settings.local.json) siguen versionados.
+/.claude/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

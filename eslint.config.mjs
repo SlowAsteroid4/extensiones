@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Cliente Prisma generado — no se lintea código generado.
     "src/generated/**",
+    // Worktrees locales de Claude Code: copias completas del repo.
+    ".claude/**",
   ]),
 ]);
 
