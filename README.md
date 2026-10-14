@@ -142,7 +142,9 @@ acepta la API.
 
 ## Producción
 
-**URL pública:** _(pendiente — se llena en cuanto el dueño autorice el proyecto en Vercel)_
+**URL pública:** https://www.lys-extensiones.com (el apex redirige a `www`
+con 308). Salud: https://www.lys-extensiones.com/api/health. Guía de operación
+para la clienta y el dueño: [`ENTREGA.md`](ENTREGA.md).
 
 Hosting **Vercel** (plan Hobby) + base de datos **Neon** (Postgres gestionado).
 
@@ -235,16 +237,16 @@ No se toca código — el adapter real ya existe desde T5 y sale de
 3. Redesplegar (Vercel → Deployments → Redeploy). Las variables solo se leen al
    arrancar; sin redespliegue el cambio no toma efecto.
 
-### Dominio propio (T11)
+### Dominio propio — activado
 
-Cuando haya acceso al DNS de `lys-extensiones.com`:
+`www.lys-extensiones.com` es la dirección principal (`A @ 76.76.21.21`,
+`CNAME www cname.vercel-dns.com`) y `APP_URL` ya apunta ahí, así que
+`back_urls`/`notification_url` salen del dominio. El webhook de MercadoPago,
+cuando se active, va a `https://www.lys-extensiones.com/api/webhooks/mercadopago`
+(con `www`: una redirección rompe el POST del aviso).
 
-1. Vercel → Settings → Domains → agregar el dominio; Vercel dicta los registros
-   DNS (`A`/`CNAME`) y emite el certificado.
-2. Cambiar `APP_URL` a `https://lys-extensiones.com` y **redesplegar** — de ahí
-   salen `back_urls` y `notification_url`, así que sin este paso los retornos de
-   pago seguirían apuntando a `*.vercel.app`.
-3. Si ya estaba MercadoPago conectado, actualizar también la URL del webhook.
+El DNS lo sirven `ns84/ns85.hostgator.mx`. Estado, incidencias abiertas y pasos
+de reversión: `ENTREGA.md` §3.
 
 ## Convenciones
 

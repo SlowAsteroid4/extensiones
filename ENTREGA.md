@@ -3,10 +3,10 @@
 Guía de operación y traspaso. Está escrita para poder seguirse **sin ayuda
 técnica**: cada sección dice qué apretar, dónde, y cómo saber que quedó bien.
 
-> **La URL de la tienda.** Donde este documento dice `TU-URL.vercel.app`,
-> pon la URL real del proyecto. La ves en Vercel → tu proyecto → arriba en
-> **Domains**. (Cuando el dominio propio esté activo — sección 3 — la URL
-> pasa a ser `lys-extensiones.com`.)
+> **La URL de la tienda es `https://www.lys-extensiones.com`.** El dominio
+> sin `www` (`lys-extensiones.com`) redirige solo a esa dirección. Usa
+> siempre la versión con `www` al configurar servicios externos (MercadoPago,
+> etc.): una redirección puede romper los avisos automáticos.
 
 ---
 
@@ -30,7 +30,7 @@ No hay ningún paso manual; las migraciones de base de datos pendientes también
 se aplican solas en cada deploy.
 
 **Cómo saber que la tienda está viva:** abre
-`https://TU-URL.vercel.app/api/health` — debe responder
+`https://www.lys-extensiones.com/api/health` — debe responder
 `{"ok":true,"db":"ok"}`. Si responde otra cosa, la base no está contestando
 (ver sección 5).
 
@@ -70,7 +70,7 @@ pagaron el pedido tal". Sin esto los pedidos se quedan en "pago pendiente".
 2. Modo **producción** → URL:
 
    ```
-   https://TU-URL.vercel.app/api/webhooks/mercadopago
+   https://www.lys-extensiones.com/api/webhooks/mercadopago
    ```
 
 3. Eventos: marca **"Pagos"** (payment). Guarda.
@@ -128,18 +128,70 @@ y Redeploy.
 
 ---
 
-## 3 · Activar el dominio `lys-extensiones.com`
+## 3 · El dominio `lys-extensiones.com` — ✅ YA ACTIVADO
 
-> ⚠️ **Advertencia importante:** hoy ese dominio muestra el WordPress viejo.
-> Al completar esta sección, el dominio pasa a mostrar **esta tienda** y el
-> WordPress **deja de verse ahí**. Es el efecto deseado, pero es un
-> interruptor: decide el momento (mejor un día de poco movimiento).
+**Estado:** el dominio ya apunta a esta tienda. El WordPress viejo dejó de
+verse ahí. Configuración comprobada el 14 de octubre de 2026:
+
+| Qué | Valor actual |
+|---|---|
+| Dirección principal | `https://www.lys-extensiones.com` (candado emitido por Vercel) |
+| `lys-extensiones.com` (sin `www`) | redirige a `www` (redirección permanente 308) |
+| Registro `A` de `@` | `76.76.21.21` (Vercel) |
+| Registro `CNAME` de `www` | `cname.vercel-dns.com` (Vercel) |
+| `APP_URL` en Vercel | `https://www.lys-extensiones.com` |
+| Registrador del dominio | PublicDomainRegistry (lo contrata HostGator); vence el 15-oct-2027 |
+| Servidores DNS del dominio | `ns84.hostgator.mx` y `ns85.hostgator.mx` |
+
+> 🚨 **Problema abierto (14-oct-2026): los servidores DNS de HostGator no
+> están respondiendo por el dominio.** El registrador manda a todo internet a
+> preguntar a `ns84/ns85.hostgator.mx`, pero esos servidores **rechazan** la
+> consulta (REFUSED). Google y Cloudflare responden "no se pudo resolver" para
+> el dominio, para `www` y para el correo (MX). La tienda solo abre para quien
+> tiene la dirección guardada en caché, y eso dura minutos. Lo más probable es
+> que la "zona DNS" del dominio ya no exista en la cuenta de HostGator.
+>
+> **Cómo se arregla (lo decide el dueño; elige UNO de los dos):**
+>
+> 1. **Restaurarlo en HostGator:** en cPanel → **Editor de zona DNS**, que el
+>    dominio vuelva a existir con: `A @ 76.76.21.21`, `CNAME www
+>    cname.vercel-dns.com` y los registros de correo (`MX` y el `A` de `mail`)
+>    que HostGator indique. Si el dominio ya no aparece en cPanel, hay que
+>    pedirle a soporte de HostGator que recree la zona.
+> 2. **Mover el DNS a Vercel:** Vercel → Settings → Domains → el dominio →
+>    "Use Vercel nameservers". En HostGator (donde se paga el dominio) cambiar
+>    los servidores DNS a `ns1.vercel-dns.com` y `ns2.vercel-dns.com`. **Antes**
+>    de cambiarlos, copiar en Vercel DNS los registros de correo (`MX`, y `A`
+>    de `mail`/`webmail` si se usan) que dé HostGator. Si no, el correo se cae.
+>
+> **Cómo verificar que quedó bien:** abre
+> <https://dns.google/resolve?name=lys-extensiones.com&type=MX> y
+> <https://dns.google/resolve?name=www.lys-extensiones.com&type=A>. Las dos
+> deben mostrar `"Status": 0` con respuestas, no `"Status": 2`.
+
+**Servicios de HostGator que dejaron de abrir con el dominio:**
+`webmail.lys-extensiones.com`, `cpanel.lys-extensiones.com` y
+`ftp.lys-extensiones.com` ya **no** llevan a HostGator. Para entrar a esos
+servicios hay que usar el acceso directo que da HostGator en su portal de
+cliente, no el dominio. El correo depende de que el registro `MX` siga
+resolviendo. **Al 14-oct-2026 el MX no resuelve** (ver el problema abierto de
+arriba), así que **no se puede asegurar que el correo esté llegando** hasta que
+se arregle el DNS.
+
+### Pasos con los que se activó (referencia para revertir)
+
+Se conservan tal cual se ejecutaron. **Para revertir** (volver a mostrar el
+WordPress en el dominio) se deshace el paso 3.2: el registro `A` de `@` vuelve
+a la IP del servidor de HostGator (está en el portal de HostGator, no en este
+documento) y se quita el dominio en Vercel. Revertir **apaga la tienda** en el
+dominio.
 
 ### 3.1 · Agregar el dominio en Vercel
 
 1. Vercel → tu proyecto → **Settings** → **Domains** → **Add**.
-2. Escribe `lys-extensiones.com` → Add. Repite con `www.lys-extensiones.com`
-   (Vercel ofrecerá redirigir el `www` al dominio pelón; acepta).
+2. Escribe `lys-extensiones.com` → Add. Repite con `www.lys-extensiones.com`.
+   Quedó configurado así: `www` es la dirección principal y el dominio sin
+   `www` redirige a ella.
 3. Vercel mostrará el dominio "Invalid Configuration" con una tabla de
    **registros DNS a crear**. Déjala abierta: son los valores del paso 3.2.
 
@@ -172,11 +224,11 @@ De `APP_URL` salen las direcciones de retorno del pago. Si no lo cambias, al
 pagar con MercadoPago la gente regresaría a la URL vieja `*.vercel.app`:
 
 1. Vercel → Settings → Environment Variables → `APP_URL` →
-   `https://lys-extensiones.com` → Save.
+   `https://www.lys-extensiones.com` → Save. (Hecho.)
 2. **Redeploy** (Deployments → `⋯` → Redeploy).
 3. Si MercadoPago ya está activo, actualiza también la URL del webhook en su
    panel (sección 2.3) a
-   `https://lys-extensiones.com/api/webhooks/mercadopago`.
+   `https://www.lys-extensiones.com/api/webhooks/mercadopago`.
 
 ---
 
@@ -184,7 +236,7 @@ pagar con MercadoPago la gente regresaría a la URL vieja `*.vercel.app`:
 
 ### Para la clienta (todo desde el navegador, también en el celular)
 
-- **Entrar al panel:** `https://TU-URL.vercel.app/login` con su correo y
+- **Entrar al panel:** `https://www.lys-extensiones.com/login` con su correo y
   contraseña de administradora → la lleva a `/admin`.
 - **Cargar un producto:** Panel → **Productos** → **Nuevo** → nombre del tono,
   familia, tipo, descripción, fotos (hasta 12), categoría y al menos una
@@ -204,7 +256,7 @@ pagar con MercadoPago la gente regresaría a la URL vieja `*.vercel.app`:
 
 - Cambios = rama + Pull Request a `main` con CI en verde. Al mergear, Vercel
   despliega solo (2–4 min). No hay comandos de deploy.
-- Salud tras cada deploy: `https://TU-URL.vercel.app/api/health`.
+- Salud tras cada deploy: `https://www.lys-extensiones.com/api/health`.
 - Errores en producción: llegan al panel de **Sentry** (sección 5.3).
 - **Activa las notificaciones de deploy fallido** (una vez, 1 minuto):
   Vercel → tu avatar → **Settings** → **Notifications** → en **Deployments**,
@@ -258,11 +310,21 @@ sin vigilancia.
   antigüedad de la firma sería más estricto.
 - **next-auth v5 en beta:** funciona y está fijado; migrar a la versión
   estable cuando salga.
-- **`npm audit`:** las vulnerabilidades corregibles sin mover versiones
-  fijadas ya se corrigieron (2 críticas incluidas). Quedan 6 avisos "high"
-  que solo se van subiendo Next.js 16.2.10 → 16.3.3 (ninguno explotable en
-  esta app: el principal es de middleware, que esta app no usa). Hacer ese
-  brinco de versión en un encargo propio, con la suite completa.
+- **`npm audit` (14-oct-2026, Next ya en 16.3.8):** 17 avisos (14 high,
+  3 moderate, **0 críticos**). **Ninguno está en el código que atiende a las
+  compradoras.** Todos vienen de herramientas que solo corren al construir o
+  al probar:
+  - CLI de Prisma (`deepmerge-ts`, `mysql2`, `@prisma/config`): npm propone
+    *bajar* a Prisma 6, lo cual no procede. Se van cuando Prisma publique un
+    parche en la serie 7.
+  - ESLint de Next (`braces`, `micromatch`, `fast-glob`): solo revisa el código
+    en desarrollo. npm propone bajar a la versión 14, lo cual no procede.
+  - `undici` (vía `jsdom`, tests), `fast-uri` (vía el plugin de build de
+    Sentry), `source-map-js` (vía Tailwind), `browserslist`,
+    `brace-expansion`, `vitest`: tienen arreglo compatible, pero
+    `npm audit fix` falla hoy por un error interno de npm
+    (`Cannot read properties of null (reading 'edgesOut')`). Reintentar con
+    un npm más nuevo y volver a correr la suite.
 - **Fotos como data-URL** — ver 5.1.
 
 ---
