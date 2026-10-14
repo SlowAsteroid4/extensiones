@@ -1,7 +1,6 @@
 // Adapter real de MercadoPago Checkout Pro (ADR-004). Código de producción:
 // se activa con PASARELA_PROVIDER=mercadopago + MERCADOPAGO_ACCESS_TOKEN de env.
-// FASE B pendiente: aún sin ejercitar contra el sandbox real (sin credenciales).
-import { MercadoPagoConfig, Payment, Preference } from "mercadopago";
+import { MercadoPagoConfig, Payment, Preference, User } from "mercadopago";
 import { urlApp } from "@/shared/config/app-url";
 import type { EstadoPagoPasarela, InfoPago, PasarelaProvider, PreferenciaCreada } from "./provider";
 
@@ -16,6 +15,35 @@ export function mapearEstadoMP(status: string | undefined): EstadoPagoPasarela {
     default:
       // pending, in_process, refunded, charged_back… — fase 1 no los procesa.
       return "otro";
+  }
+}
+
+// Con una cuenta vendedora DE PRUEBA, el checkout de pruebas es
+// sandbox_init_point; init_point abre el de producción. La cuenta misma
+// declara si es de prueba (tag `test_user` de /users/me), así que cambiar el
+// token de prueba por el de producción basta: no hay bandera que olvidar.
+export function elegirUrlCheckout(
+  urls: { init_point?: string; sandbox_init_point?: string },
+  cuentaDePrueba: boolean
+): string | undefined {
+  return cuentaDePrueba ? (urls.sandbox_init_point ?? urls.init_point) : urls.init_point;
+}
+
+// Una consulta a /users/me por token y proceso.
+const cuentaDePruebaPorToken = new Map<string, boolean>();
+
+async function esCuentaDePrueba(cliente: MercadoPagoConfig, accessToken: string) {
+  const guardado = cuentaDePruebaPorToken.get(accessToken);
+  if (guardado !== undefined) return guardado;
+  try {
+    const usuario = await new User(cliente).get();
+    const esPrueba = (usuario.tags ?? []).includes("test_user");
+    cuentaDePruebaPorToken.set(accessToken, esPrueba);
+    return esPrueba;
+  } catch (error) {
+    // Sin respuesta no se asume prueba: una compradora real nunca va al sandbox.
+    console.warn("[pasarela MP] no se pudo consultar /users/me; se usa init_point", error);
+    return false;
   }
 }
 
@@ -35,7 +63,7 @@ export function crearProveedorMercadoPago(): PasarelaProvider {
     nombre: "mercadopago",
 
     async crearPreferencia({ folio, items, email_comprador }): Promise<PreferenciaCreada> {
-      const preferencia = await new Preference(cliente).create({
+      const creacion = new Preference(cliente).create({
         body: {
           external_reference: folio,
           items: items.map((item, indice) => ({
@@ -59,10 +87,15 @@ export function crearProveedorMercadoPago(): PasarelaProvider {
         },
       });
 
-      if (!preferencia.id || !preferencia.init_point) {
+      const [preferencia, cuentaDePrueba] = await Promise.all([
+        creacion,
+        esCuentaDePrueba(cliente, accessToken),
+      ]);
+      const urlCheckout = elegirUrlCheckout(preferencia, cuentaDePrueba);
+      if (!preferencia.id || !urlCheckout) {
         throw new Error("MercadoPago no devolvió id/init_point de la preferencia");
       }
-      return { pasarela_ref: preferencia.id, init_point: preferencia.init_point };
+      return { pasarela_ref: preferencia.id, init_point: urlCheckout };
     },
 
     async obtenerPago(idPago: string): Promise<InfoPago | null> {
