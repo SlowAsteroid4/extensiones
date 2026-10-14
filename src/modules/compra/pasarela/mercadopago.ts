@@ -26,25 +26,26 @@ export function elegirUrlCheckout(
   urls: { init_point?: string; sandbox_init_point?: string },
   cuentaDePrueba: boolean
 ): string | undefined {
-  return cuentaDePrueba ? (urls.sandbox_init_point ?? urls.init_point) : urls.init_point;
+  return cuentaDePrueba ? urls.sandbox_init_point : urls.init_point;
 }
 
-// Una consulta a /users/me por token y proceso.
+// Una consulta a /users/me por token y proceso. Un fallo no se guarda: el
+// siguiente checkout vuelve a consultar.
 const cuentaDePruebaPorToken = new Map<string, boolean>();
 
+// Falla cerrado: si no se puede saber qué tipo de cuenta es, el error sube y el
+// pedido responde 502 sin quedar huérfano. Nunca se supone producción.
 async function esCuentaDePrueba(cliente: MercadoPagoConfig, accessToken: string) {
   const guardado = cuentaDePruebaPorToken.get(accessToken);
   if (guardado !== undefined) return guardado;
-  try {
-    const usuario = await new User(cliente).get();
-    const esPrueba = (usuario.tags ?? []).includes("test_user");
-    cuentaDePruebaPorToken.set(accessToken, esPrueba);
-    return esPrueba;
-  } catch (error) {
-    // Sin respuesta no se asume prueba: una compradora real nunca va al sandbox.
-    console.warn("[pasarela MP] no se pudo consultar /users/me; se usa init_point", error);
-    return false;
+
+  const usuario = await new User(cliente).get();
+  if (!Array.isArray(usuario.tags)) {
+    throw new Error("MercadoPago /users/me no devolvió tags: no se puede elegir el checkout");
   }
+  const esPrueba = usuario.tags.includes("test_user");
+  cuentaDePruebaPorToken.set(accessToken, esPrueba);
+  return esPrueba;
 }
 
 export function crearProveedorMercadoPago(): PasarelaProvider {
@@ -63,7 +64,10 @@ export function crearProveedorMercadoPago(): PasarelaProvider {
     nombre: "mercadopago",
 
     async crearPreferencia({ folio, items, email_comprador }): Promise<PreferenciaCreada> {
-      const creacion = new Preference(cliente).create({
+      // Antes de crear nada en MP: si la cuenta no se puede verificar, no
+      // queda una preferencia suelta.
+      const cuentaDePrueba = await esCuentaDePrueba(cliente, accessToken);
+      const preferencia = await new Preference(cliente).create({
         body: {
           external_reference: folio,
           items: items.map((item, indice) => ({
@@ -87,13 +91,10 @@ export function crearProveedorMercadoPago(): PasarelaProvider {
         },
       });
 
-      const [preferencia, cuentaDePrueba] = await Promise.all([
-        creacion,
-        esCuentaDePrueba(cliente, accessToken),
-      ]);
       const urlCheckout = elegirUrlCheckout(preferencia, cuentaDePrueba);
       if (!preferencia.id || !urlCheckout) {
-        throw new Error("MercadoPago no devolvió id/init_point de la preferencia");
+        const campo = cuentaDePrueba ? "sandbox_init_point" : "init_point";
+        throw new Error(`MercadoPago no devolvió id/${campo} de la preferencia`);
       }
       return { pasarela_ref: preferencia.id, init_point: urlCheckout };
     },
