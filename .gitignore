@@ -44,6 +44,9 @@ yarn-error.log*
 # versionada (config compartida del servidor de desarrollo, sin rutas locales).
 /.claude/
 
+# skills de Claude Code (lock local, no es parte del producto)
+/skills-lock.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
