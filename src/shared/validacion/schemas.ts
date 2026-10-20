@@ -220,6 +220,25 @@ export const varianteRapidaSchema = z
     message: "Se requiere precio_mxn o existencias",
   });
 
+// ── T9 · Bitácora de pedidos (panel) ─────────────────────────────────────────
+
+// Query params de GET /api/admin/pedidos — coerción desde string; inválido → 400.
+// El tope de por_pagina refleja POR_PAGINA_MAX de src/modules/admin/pedidos.ts.
+export const filtrosPedidosAdminSchema = z.object({
+  estado: z.enum(["pendiente", "pagado_sandbox", "rechazado"]).optional(),
+  pagina: z.coerce
+    .number({ error: "pagina debe ser un número" })
+    .int("pagina debe ser un entero")
+    .min(1, "pagina mínima: 1")
+    .optional(),
+  por_pagina: z.coerce
+    .number({ error: "por_pagina debe ser un número" })
+    .int("por_pagina debe ser un entero")
+    .min(1, "por_pagina mínima: 1")
+    .max(50, "por_pagina máxima: 50")
+    .optional(),
+});
+
 // H18: testimonios del panel.
 export const testimonioCrearSchema = testimonioSchema;
 export const testimonioEditarSchema = z.object({
