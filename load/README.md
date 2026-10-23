@@ -10,6 +10,10 @@ Objetivo: saber si la tienda aguanta tráfico moderado con los planes gratuitos
 orden, revisando entre paso y paso el dashboard de Neon (CU-hrs) y Vercel:
 
 ```bash
+# 0. Humo de solo lecturas con catálogo VACÍO (producción recién sembrada):
+#    navegacion.js aborta sin productos; este no.
+k6 run -e BASE_URL=https://<url-publica> load/lecturas.js
+
 # 1. Humo: 5 usuarias, 30 segundos. Si esto degrada, DETENTE y reporta.
 k6 run -e BASE_URL=https://<url-publica> -e SMOKE=1 load/navegacion.js
 
