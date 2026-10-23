@@ -35,6 +35,7 @@ export default function RootLayout({
     // antes de hidratar, así que el atributo no coincide con el del servidor.
     <html lang="es" className={`${poppins.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <ScriptTema />
       </head>
       <body className="min-h-full flex flex-col bg-fondo-pagina text-texto font-sans">
