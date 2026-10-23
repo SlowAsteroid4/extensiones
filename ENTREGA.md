@@ -338,7 +338,7 @@ contiene ningún valor — solo dice dónde están y cómo cambiarlas.
 
 | Credencial | Dónde vive | Cómo se rota (si se filtró o por higiene) |
 |---|---|---|
-| `DATABASE_URL` / `DIRECT_URL` (contraseña de la base) | Vercel → Env. Variables; se obtiene en Neon | Neon → Dashboard → Roles → **Reset password** → copiar las DOS cadenas nuevas (pooled y directa) a Vercel → Redeploy |
+| `DATABASE_URL` / `DIRECT_URL` (contraseña de la base) | Vercel → Env. Variables; se obtiene en Neon | Neon → Dashboard → Roles → **Reset password** → copiar las cadenas nuevas (pooled y directa) a Vercel — en **las dos** variables de cada una: la de Production (rama `production`) y la de Preview (rama `preview`), porque comparten contraseña — → Redeploy |
 | `AUTH_SECRET` (firma las sesiones) | Vercel → Env. Variables | Generar uno nuevo en una terminal: `openssl rand -base64 32` → reemplazar en Vercel → Redeploy. Efecto: todas las sesiones se cierran (la gente vuelve a iniciar sesión; no se pierde nada) |
 | `MERCADOPAGO_ACCESS_TOKEN` y `MERCADOPAGO_WEBHOOK_SECRET` | Vercel → Env. Variables; se obtienen en el panel de MercadoPago | MercadoPago → Tus integraciones → la aplicación → Credenciales → **Renovar**; copiar el token nuevo a Vercel → Redeploy (y si se renueva el secret del webhook, actualizarlo igual) |
 | Contraseña de la administradora (la clienta) | Solo en su cabeza (la base guarda un hash irreversible) | Hoy no hay pantalla de "cambiar contraseña": la rotación la hace el equipo técnico contra la base. Está anotado como mejora pendiente |

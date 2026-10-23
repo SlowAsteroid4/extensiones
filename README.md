@@ -76,7 +76,7 @@ prisma/           # schema, migraciones, seed
 | `npm run db:seed` | seed de desarrollo, idempotente (72 productos) |
 | `npm run db:seed-produccion` | seed de producción: 3 categorías + 1 admin, **cero catálogo** |
 | `npm run build` | build de producción local (sin migraciones) |
-| `npm run vercel-build` | build que corre Vercel: `prisma migrate deploy` + `next build` |
+| `npm run vercel-build` | build que corre Vercel (`scripts/vercel-build.ts`): `prisma generate` + `next build`; **`prisma migrate deploy` solo si `VERCEL_ENV=production`** |
 
 ## API (fases 1 y 2 · T4+T5)
 
@@ -159,13 +159,60 @@ configurarlo:
 
 ```
 vercel.json  →  buildCommand: "npm run vercel-build"
-package.json →  vercel-build: "prisma migrate deploy && next build"
+package.json →  vercel-build: "tsx scripts/vercel-build.ts"
 ```
 
-Es decir: **las migraciones pendientes se aplican solas en cada despliegue**.
-Un cambio de schema se sube como migración en el PR y se aplica al mergear.
-`npm run build` (sin `vercel-`) se deja sin migraciones para que el build local
-nunca toque una base ajena.
+`scripts/vercel-build.ts` decide según `VERCEL_ENV` (la fija Vercel):
+
+| `VERCEL_ENV` | Pasos |
+|---|---|
+| `production` | `prisma generate` → **`prisma migrate deploy`** → `next build` |
+| `preview`, `development`, ausente u otro | `prisma generate` → `next build` (**sin migrar**) |
+
+Es decir: **las migraciones pendientes se aplican solas al desplegar a
+Producción** (merge a `main`), y solo entonces. Un cambio de schema se sube como
+migración en el PR y se aplica al mergear. Falla cerrado: solo el valor exacto
+`production` migra. `npm run build` (sin `vercel-`) tampoco migra, para que el
+build local nunca toque una base ajena. Cubierto por `scripts/vercel-build.test.ts`.
+
+### Preview aislado de Producción (encargo 18)
+
+Neon tiene **dos ramas** en el proyecto `floral-recipe-67604976`: `production`
+(la default; la que sirve la tienda) y `preview` (creada desde `production`,
+con su propio endpoint). Los despliegues de Preview de Vercel apuntan a `preview`
+y nunca migran, así que ni escriben en producción ni compiten por su
+`pg_advisory_lock` (el P1002 del deploy del #10).
+
+En Vercel → Settings → Environment Variables, `DATABASE_URL` y `DIRECT_URL`
+existen **dos veces**, cada una con su alcance:
+
+| Variable | Alcance | Valor |
+|---|---|---|
+| `DATABASE_URL` | solo **Production** | pooled de la rama `production` |
+| `DIRECT_URL` | solo **Production** | directa de la rama `production` |
+| `DATABASE_URL` | solo **Preview** | pooled de la rama `preview` |
+| `DIRECT_URL` | solo **Preview** | directa de la rama `preview` |
+
+Las cadenas se sacan con la CLI de Neon, sin pasar por el navegador:
+
+```bash
+npx neon@latest connection-string preview --project-id floral-recipe-67604976 --pooled   # DATABASE_URL (Preview)
+npx neon@latest connection-string preview --project-id floral-recipe-67604976            # DIRECT_URL (Preview)
+```
+
+Dos cosas que conviene saber:
+
+- **El aislamiento es de datos, no de credenciales.** Las ramas de un proyecto
+  Neon comparten el rol `neondb_owner` y su contraseña; quien tenga la cadena de
+  `preview` tiene la contraseña de `production`. Rotarla (ENTREGA.md §6) cambia
+  ambas.
+- **Los previews no reciben migraciones.** Un PR que agrega una migración se
+  prueba en preview contra una base sin ella. Antes de revisar ese preview se
+  aplica a mano a la rama `preview`:
+  `DIRECT_URL="<directa de preview>" npx prisma migrate deploy`. Cuando el
+  desfase se acumule, se descarta y se recrea la rama desde `production`
+  (`npx neon@latest branches delete preview …` y `branches create --name preview
+  --parent production …`). En Producción las migraciones siguen automáticas.
 
 > Por qué `vercel.json` y no solo el script: para Next.js, Vercel usa el script
 > `build` de `package.json`; que además prefiera uno llamado `vercel-build` no
@@ -197,8 +244,8 @@ nunca en el repo. `.env.example` documenta cada una.
 
 | Variable | Valor en producción | Para qué |
 |---|---|---|
-| `DATABASE_URL` | cadena **pooled** de Neon | conexión de la app |
-| `DIRECT_URL` | cadena **directa** de Neon | `prisma migrate deploy` del build |
+| `DATABASE_URL` | cadena **pooled** de Neon (rama `production`; Preview usa la de `preview`, ver arriba) | conexión de la app |
+| `DIRECT_URL` | cadena **directa** de Neon (ídem) | `prisma migrate deploy` del build de Producción |
 | `AUTH_SECRET` | uno **nuevo**, `openssl rand -base64 32` | firma la cookie de sesión. Nunca el de desarrollo |
 | `APP_URL` | la URL pública | base de `back_urls`/`notification_url` y del retorno de pago |
 | `PASARELA_PROVIDER` | `fake` | pago simulado mientras no lleguen las credenciales de MP |
